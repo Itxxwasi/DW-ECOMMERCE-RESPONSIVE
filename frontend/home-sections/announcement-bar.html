@@ -1,0 +1,13 @@
+<!-- Announcement Bar Section -->
+<div class="announcement-bar" data-section-id="{{sectionId}}" style="background-color: {{backgroundColor}}; color: {{textColor}};">
+    <div class="announcement-bar-content" style="animation-duration: {{scrollSpeed}}s;">
+        {{#each items}}
+        <span class="announcement-bar-item">{{this}}</span>
+        {{/each}}
+        <!-- Duplicate for seamless loop -->
+        {{#each items}}
+        <span class="announcement-bar-item">{{this}}</span>
+        {{/each}}
+    </div>
+</div>
+

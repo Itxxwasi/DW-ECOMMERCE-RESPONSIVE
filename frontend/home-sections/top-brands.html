@@ -1,0 +1,21 @@
+<!-- Top Brands Section -->
+<section class="home-section brand-section-{{sectionType}}" data-section-id="{{sectionId}}" data-section-type="{{sectionType}}">
+    {{#if title}}<h2 class="section-title">{{title}}</h2>{{/if}}
+    {{#if subtitle}}<p class="section-subtitle">{{subtitle}}</p>{{/if}}
+    <!-- Brand Grid Layout (for brandGrid type) -->
+    <div class="brand-grid-container">
+        {{#each brands}}
+        <div class="brand-grid-item">
+            <a href="{{link}}" class="brand-grid-card">
+                <div class="brand-logo-wrapper">
+                    <img src="{{logoUrl}}" alt="{{name}}" loading="lazy" onerror="this.src='/images/placeholder-brand.jpg'">
+                </div>
+            </a>
+            {{#if discountText}}
+            <div class="brand-discount-badge">{{discountText}}</div>
+            {{/if}}
+        </div>
+        {{/each}}
+    </div>
+</section>
+

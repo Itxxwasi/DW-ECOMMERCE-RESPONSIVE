@@ -1,0 +1,129 @@
+/project-root
+│
+├── index.html                ← Main homepage (includes the sections)
+│
+├── /home-sections            ← Each section in a separate HTML file
+│   ├── hero-slider.html
+│   ├── popular-categories.html
+│   ├── new-arrivals.html
+│   ├── featured-collections.html
+│   ├── top-selling-products.html
+│   ├── top-selling-lipsticks.html
+│   ├── top-brands.html
+│   ├── special-collections.html
+│   └── newsletter-social.html
+│
+├── /assets
+│   ├── /css
+│   │   └── home.css          ← Home Page CSS (mobile-first responsive)
+│   │
+│   ├── /js
+│   │   └── home.js           ← Home Page JS
+│   │
+│   └── /images               ← Placeholder images
+│
+└── /includes                 ← If you use PHP/Blade/etc.
+    └── layout files
+You are an expert front-end developer.
+
+Create a fully **mobile-first, 100% responsive cosmetics e-commerce homepage** using ONLY:
+- HTML
+- CSS
+- JavaScript
+
+No frameworks, no libraries. Must work on all mobile, tablet, and desktop devices.
+
+----------------------------------------------------------
+PROJECT STRUCTURE:
+----------------------------------------------------------
+
+1) index.html
+   - Main homepage file
+   - Contains <div id="homepage-sections"></div>
+   - Links home.css and home.js
+   - Loads all section HTML files dynamically
+
+2) /assets/css/home.css
+   - Mobile-first responsive CSS
+   - Flexbox + CSS Grid for layout
+   - Smooth hover animations, soft shadows, rounded corners
+   - Cosmetics-style pastel color palette (white, pink, soft tones)
+   - Use fluid units (%, rem, vw) and media queries for tablet & desktop
+
+3) /assets/js/home.js
+   - Dynamically loads all homepage section HTML files
+   - Handles sliders and any interactive UI
+   - Minimal, efficient JavaScript for mobile-first performance
+
+4) /home-sections/ (separate HTML files for each section)
+   - hero-slider.html
+   - popular-categories.html
+   - new-arrivals.html
+   - featured-collections.html
+   - top-selling-products.html
+   - top-selling-lipsticks.html
+   - top-brands.html
+   - special-collections.html
+   - newsletter-social.html
+
+----------------------------------------------------------
+HOMEPAGE SECTIONS TO BUILD:
+----------------------------------------------------------
+
+1. Hero Slider / Banner
+   - Full-width slider, 2–3 slides
+   - Each slide: headline, subtext, "Shop Now" button
+   - Auto-slide + navigation arrows/dots
+
+2. Popular Categories
+   - Grid of category cards with placeholder images
+   - Hover zoom effect
+
+3. New Arrivals
+   - Grid of 4–8 product cards
+   - Each product: image, name, price, add-to-cart button
+
+4. Featured Collections
+   - Horizontal slider or grid
+   - Cards for Eyelashes, Lip Products, Fragrances, Hair Accessories
+
+5. Top Selling Products
+   - Grid or slider of 6–10 products
+
+6. Top Selling Lipsticks
+   - Lipstick-focused grid or slider
+   - Pink-themed highlight styling
+
+7. Top Brands
+   - Grid of placeholder brand logos
+
+8. Special Collections
+   - Cards for Watches, Lingerie, Hair Care Sets
+
+9. Newsletter & Social Connect
+   - Email signup form
+   - Social media icons (placeholders)
+
+----------------------------------------------------------
+DESIGN REQUIREMENTS:
+----------------------------------------------------------
+
+• Mobile-first responsive layout (then tablet and desktop)
+• Flexbox + CSS Grid
+• Smooth hover animations and transitions
+• Rounded corners and soft shadows for cards
+• Fluid widths and spacing (%, rem, vw)
+• Clean, modern typography
+• Minimal JS for sliders and section loading
+• Use placeholder images and text
+
+----------------------------------------------------------
+OUTPUT FILES:
+----------------------------------------------------------
+
+- index.html
+- /assets/css/home.css
+- /assets/js/home.js
+- /home-sections/*.html (all section files listed above)
+
+Build the complete homepage using these specifications.

@@ -1,0 +1,14 @@
+<!-- Popular Categories Section -->
+<section class="home-section" data-section-id="{{sectionId}}">
+    {{#if title}}<h2 class="section-title">{{title}}</h2>{{/if}}
+    {{#if subtitle}}<p class="section-subtitle">{{subtitle}}</p>{{/if}}
+    <div class="category-grid">
+        {{#each categories}}
+        <a href="/products.html?category={{id}}" class="category-card">
+            <img src="{{imageUrl}}" alt="{{name}}" class="category-card-image" loading="lazy">
+            <div class="category-card-title">{{name}}</div>
+        </a>
+        {{/each}}
+    </div>
+</section>
+

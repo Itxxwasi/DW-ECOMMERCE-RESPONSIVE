@@ -1,0 +1,969 @@
+/**
+ * Homepage Sections - Mobile-First Dynamic Loading
+ * Loads sections from backend API and renders them with data
+ */
+
+(function() {
+    'use strict';
+    
+    // CRITICAL: Log immediately to verify script loads
+    console.log('🚀 home.js STARTING - Script is loading!');
+    console.log('🚀 home.js version: v21');
+    console.log('🚀 home.js timestamp:', new Date().toISOString());
+
+    // Section type to template mapping
+    const SECTION_TEMPLATES = {
+        'scrollingText': 'announcement-bar.html',
+        'bannerFullWidth': 'banner.html',
+        'heroSlider': 'hero-slider.html',
+        'categoryFeatured': 'popular-categories.html',
+        'categoryGrid': 'popular-categories.html',
+        'categoryCircles': 'popular-categories.html',
+        'newArrivals': 'new-arrivals.html',
+        'topSelling': 'top-selling-products.html',
+        'featuredCollections': 'featured-collections.html',
+        'brandSection': 'brand-section.html',
+        'newsletterSocial': 'newsletter-social.html'
+    };
+
+    // Cache for templates
+    const templateCache = {};
+
+    /**
+     * Load HTML template from file
+     */
+    async function loadTemplate(templateName) {
+        if (templateCache[templateName]) {
+            return templateCache[templateName];
+        }
+
+        try {
+            const url = `/home-sections/${templateName}`;
+            console.log(`📥 Fetching template from: ${url}`);
+            const response = await fetch(url);
+            if (!response.ok) {
+                console.error(`❌ Failed to load template ${templateName}: ${response.status} ${response.statusText}`);
+                throw new Error(`Failed to load template: ${templateName} - ${response.status} ${response.statusText}`);
+            }
+            const html = await response.text();
+            if (!html || html.trim().length === 0) {
+                console.error(`❌ Template ${templateName} is empty`);
+                return null;
+            }
+            templateCache[templateName] = html;
+            console.log(`✅ Template ${templateName} loaded successfully (${html.length} chars)`);
+            return html;
+        } catch (error) {
+            console.error(`❌ Error loading template ${templateName}:`, error);
+            return null;
+        }
+    }
+
+    /**
+     * Simple template engine - replace {{variables}} with data
+     */
+    function renderTemplate(template, data) {
+        let html = template;
+        
+        // Handle {{#each}} loops first
+        html = html.replace(/\{\{#each\s+(\w+)\}\}([\s\S]*?)\{\{\/each\}\}/g, (match, arrayName, content) => {
+            const array = data[arrayName] || [];
+            if (array.length === 0) return '';
+            
+            return array.map((item, index) => {
+                let itemContent = content;
+                
+                // Handle {{this}} - if item is a string, use it directly
+                if (typeof item === 'string') {
+                    itemContent = itemContent.replace(/\{\{this\}\}/g, item);
+                }
+                
+                // Handle @index, @first, @last FIRST (before other replacements)
+                itemContent = itemContent.replace(/\{\{@index\}\}/g, index);
+                
+                // Handle {{#if @first}} conditionals
+                itemContent = itemContent.replace(/\{\{#if @first\}\}([\s\S]*?)\{\{\/if\}\}/g, (m, innerContent) => {
+                    return index === 0 ? innerContent : '';
+                });
+                
+                // Handle {{#if @last}} conditionals
+                itemContent = itemContent.replace(/\{\{#if @last\}\}([\s\S]*?)\{\{\/if\}\}/g, (m, innerContent) => {
+                    return index === array.length - 1 ? innerContent : '';
+                });
+                
+                // Replace variables in loop content (object properties)
+                // First try to get from item object, then fallback to parent data
+                itemContent = itemContent.replace(/\{\{(\w+)\}\}/g, (m, key) => {
+                    // Skip if it's {{this}} and we already handled it
+                    if (key === 'this' && typeof item === 'string') {
+                        return item;
+                    }
+                    // Skip @index, @first, @last as they're already handled
+                    if (key === '@index' || key === '@first' || key === '@last') {
+                        return '';
+                    }
+                    // If item is an object, get the property
+                    if (typeof item === 'object' && item !== null) {
+                        if (item[key] !== undefined && item[key] !== null) {
+                            return String(item[key]);
+                        }
+                    }
+                    // Fallback to parent data if not found in item
+                    if (data[key] !== undefined && data[key] !== null) {
+                        return String(data[key]);
+                    }
+                    return '';
+                });
+                
+                return itemContent;
+            }).join('');
+        });
+
+        // Handle {{#if}} conditionals (process multiple times to handle nested conditionals)
+        let changed = true;
+        let iterations = 0;
+        while (changed && iterations < 10) {
+            changed = false;
+            iterations++;
+            
+            html = html.replace(/\{\{#if\s+([^}]+)\}\}([\s\S]*?)\{\{\/if\}\}/g, (match, condition, content) => {
+                // Trim condition and check for special cases
+                condition = condition.trim();
+                
+                // Handle @first, @last (shouldn't appear here, but handle just in case)
+                if (condition === '@first' || condition === '@last') {
+                    return '';
+                }
+                
+                // Check if condition is true
+                const conditionValue = data[condition];
+                const isTrue = conditionValue !== undefined && conditionValue !== null && conditionValue !== false && conditionValue !== '';
+                
+                if (isTrue) {
+                    changed = true;
+                    // Process content for nested variables
+                    let processedContent = content;
+                    // Process nested variables first
+                    processedContent = processedContent.replace(/\{\{(\w+)\}\}/g, (m, key) => {
+                        if (data[key] !== undefined && data[key] !== null) {
+                            return String(data[key]);
+                        }
+                        return '';
+                    });
+                    // Process nested conditionals if any
+                    processedContent = processedContent.replace(/\{\{#if\s+(\w+)\}\}([\s\S]*?)\{\{\/if\}\}/g, (m, nestedCondition, nestedContent) => {
+                        const nestedValue = data[nestedCondition.trim()];
+                        const nestedIsTrue = nestedValue !== undefined && nestedValue !== null && nestedValue !== false && nestedValue !== '';
+                        return nestedIsTrue ? nestedContent : '';
+                    });
+                    return processedContent;
+                } else {
+                    changed = true;
+                    return '';
+                }
+            });
+        }
+
+        // Replace simple variables (do this last)
+        html = html.replace(/\{\{([^}]+)\}\}/g, (match, key) => {
+            key = key.trim();
+            // Skip if it looks like a template tag that wasn't processed
+            if (key.startsWith('#') || key.startsWith('/') || key.startsWith('@')) {
+                return ''; // Remove unprocessed template tags
+            }
+            // Check if key exists in data
+            if (data[key] !== undefined && data[key] !== null) {
+                return String(data[key]); // Convert to string to ensure it's rendered
+            }
+            // If key doesn't exist, return empty string (don't leave {{key}} in HTML)
+            return '';
+        });
+
+        // Remove any remaining unprocessed template tags (aggressive cleanup)
+        // BUT only remove if they look like unprocessed template tags (start with #, /, @)
+        // Don't remove valid variables that might have been missed
+        html = html.replace(/\{\{[#\/@][^}]*\}\}/g, '');
+        html = html.replace(/\{\{\/[^}]*\}\}/g, '');
+        // Remove any stray template syntax that might be incomplete
+        html = html.replace(/\{\{[^}]*$/gm, '');
+        // DO NOT remove > characters - they are part of valid HTML tags
+        // Clean up any whitespace-only lines that might have been left
+        html = html.replace(/^\s*$/gm, '');
+
+        return html;
+    }
+
+    /**
+     * Fetch section data from backend API
+     */
+    async function fetchSectionData(section) {
+        try {
+            switch (section.type) {
+                case 'scrollingText':
+                    // Announcement bar - data comes from config
+                    return {
+                        sectionId: section._id,
+                        backgroundColor: section.config.backgroundColor || '#c42525',
+                        textColor: section.config.textColor || '#ffffff',
+                        items: section.config.items || [],
+                        scrollSpeed: section.config.scrollSpeed || 20
+                    };
+
+                case 'bannerFullWidth':
+                    // Banner - data comes from config
+                    const imageUrl = section.config.imageUrl || '';
+                    const sizingMode = section.config.sizingMode || 'auto';
+                    console.log(`🖼️ Banner config for ${section.name}:`, {
+                        imageUrl: imageUrl,
+                        altText: section.config.altText,
+                        link: section.config.link,
+                        sizingMode: sizingMode,
+                        customWidth: section.config.customWidth,
+                        customHeight: section.config.customHeight,
+                        mobileHeight: section.config.mobileHeight,
+                        tabletHeight: section.config.tabletHeight,
+                        desktopHeight: section.config.desktopHeight,
+                        fullConfig: section.config
+                    });
+                    return {
+                        sectionId: section._id,
+                        imageUrl: imageUrl,
+                        altText: section.config.altText || 'Banner',
+                        link: section.config.link || '',
+                        sizingMode: sizingMode,
+                        customWidth: section.config.customWidth,
+                        customHeight: section.config.customHeight,
+                        mobileHeight: section.config.mobileHeight,
+                        tabletHeight: section.config.tabletHeight,
+                        desktopHeight: section.config.desktopHeight
+                    };
+
+                case 'heroSlider':
+                    // Hero slider - fetch from sliders API
+                    console.log('📸 Fetching sliders for hero slider section...');
+                    const sliderResponse = await fetch('/api/sliders');
+                    if (!sliderResponse.ok) {
+                        console.error('❌ Failed to fetch sliders:', sliderResponse.status);
+                        return null;
+                    }
+                    const allSliders = await sliderResponse.json();
+                    console.log(`✅ Fetched ${allSliders.length} sliders from API`);
+                    
+                    // Filter sliders by IDs if specified, otherwise use all active sliders
+                    let selectedSliders = [];
+                    if (section.config.sliderIds && section.config.sliderIds.length > 0) {
+                        console.log(`🔍 Filtering sliders by IDs: ${section.config.sliderIds.join(', ')}`);
+                        selectedSliders = allSliders.filter(s => section.config.sliderIds.includes(s._id));
+                        console.log(`✅ Found ${selectedSliders.length} matching sliders`);
+                    } else {
+                        console.log('⚠️ No sliderIds specified, using all active sliders');
+                        selectedSliders = allSliders;
+                    }
+                    
+                    if (selectedSliders.length === 0) {
+                        console.warn('⚠️ No sliders found for hero slider section');
+                        return null;
+                    }
+                    
+                    // Map slider data to slide format
+                    const slides = selectedSliders.map(s => {
+                        // Get image URL from imageUpload.populated or image field
+                        let imageUrl = '';
+                        if (s.imageUpload && s.imageUpload.url) {
+                            imageUrl = s.imageUpload.url;
+                        } else if (s.image) {
+                            imageUrl = s.image;
+                        } else if (s.imageMobile && s.imageMobileUpload && s.imageMobileUpload.url) {
+                            imageUrl = s.imageMobileUpload.url;
+                        }
+                        
+                        return {
+                            imageUrl: imageUrl,
+                            altText: s.imageAlt || s.title || 'Slider image',
+                            title: s.title,
+                            subtitle: s.description,
+                            buttonText: s.buttonText,
+                            buttonLink: s.link || s.buttonLink
+                        };
+                    });
+                    
+                    console.log(`✅ Prepared ${slides.length} slides for hero slider`);
+                    return {
+                        sectionId: section._id,
+                        slides: slides,
+                        showArrows: section.config.showArrows !== false,
+                        showDots: section.config.showDots !== false,
+                        autoplay: section.config.autoplay !== false,
+                        autoplayInterval: section.config.autoplayInterval || 3000
+                    };
+
+                case 'categoryFeatured':
+                case 'categoryGrid':
+                case 'categoryCircles':
+                    // Categories - fetch from categories API
+                    const categoryResponse = await fetch('/api/categories?limit=8');
+                    const categories = await categoryResponse.json();
+                    return {
+                        sectionId: section._id,
+                        title: section.title,
+                        subtitle: section.subtitle,
+                        categories: categories.map(cat => ({
+                            id: cat._id,
+                            name: cat.name,
+                            imageUrl: cat.imageUrl || '/images/placeholder-category.jpg'
+                        }))
+                    };
+
+                case 'newArrivals':
+                    // New arrivals - fetch from products API
+                    const newArrivalsResponse = await fetch('/api/products?filter=new&limit=8');
+                    const newProducts = await newArrivalsResponse.json();
+                    return {
+                        sectionId: section._id,
+                        title: section.title,
+                        subtitle: section.subtitle,
+                        products: newProducts.map(p => ({
+                            id: p._id,
+                            name: p.name,
+                            price: p.price,
+                            imageUrl: p.images && p.images[0] ? p.images[0] : '/images/placeholder-product.jpg'
+                        }))
+                    };
+
+                case 'topSelling':
+                    // Top selling - fetch from products API
+                    const topSellingResponse = await fetch('/api/products?filter=top-selling&limit=10');
+                    const topProducts = await topSellingResponse.json();
+                    return {
+                        sectionId: section._id,
+                        title: section.title,
+                        subtitle: section.subtitle,
+                        products: topProducts.map(p => ({
+                            id: p._id,
+                            name: p.name,
+                            price: p.price,
+                            imageUrl: p.images && p.images[0] ? p.images[0] : '/images/placeholder-product.jpg'
+                        }))
+                    };
+
+                case 'featuredCollections':
+                    // Featured collections - fetch from products API
+                    const collectionsResponse = await fetch('/api/products?filter=featured&limit=6');
+                    const collections = await collectionsResponse.json();
+                    return {
+                        sectionId: section._id,
+                        title: section.title,
+                        subtitle: section.subtitle,
+                        collections: collections.map(c => ({
+                            name: c.name,
+                            imageUrl: c.images && c.images[0] ? c.images[0] : '/images/placeholder-collection.jpg',
+                            linkUrl: `/product.html?id=${c._id}`
+                        }))
+                    };
+
+
+                case 'newsletterSocial':
+                    // Newsletter & Social - data comes from config
+                    return {
+                        sectionId: section._id,
+                        title: section.title,
+                        subtitle: section.subtitle,
+                        backgroundColor: section.config.backgroundColor || '#c42525',
+                        textColor: section.config.textColor || '#ffffff',
+                        socialLinks: section.config.socialLinks || []
+                    };
+
+                case 'brandSection':
+                    // Brand Section - brands are stored directly in section config
+                    console.log('🔍 Brand Section detected:', {
+                        sectionName: section.name,
+                        sectionId: section._id,
+                        hasConfig: !!section.config,
+                        configKeys: section.config ? Object.keys(section.config) : [],
+                        brandsInConfig: section.config?.brands ? section.config.brands.length : 0,
+                        fullConfig: section.config
+                    });
+                    
+                    const brands = section.config?.brands || [];
+                    
+                    if (brands.length === 0) {
+                        console.warn('⚠️ Brand Section has no brands configured', {
+                            sectionName: section.name,
+                            config: section.config
+                        });
+                        return {
+                            sectionId: section._id,
+                            title: section.title || '',
+                            subtitle: section.subtitle || '',
+                            brands: []
+                        };
+                    }
+                    
+                    console.log(`✅ Found ${brands.length} brands in Brand Section config:`, brands);
+                    
+                    // Sort brands by order
+                    const sortedBrands = brands.sort((a, b) => (a.order || 0) - (b.order || 0));
+                    
+                    const brandsData = sortedBrands.map(b => {
+                        const logoUrl = b.imageUrl || '/images/placeholder-brand.jpg';
+                        const link = b.link && b.link.trim() !== '' ? b.link : '#';
+                        
+                        let discountText = '';
+                        if (b.discountText && b.discountText.trim() !== '') {
+                            discountText = b.discountText.trim();
+                        } else if (b.discount && b.discount > 0) {
+                            discountText = `Flat ${b.discount}% OFF`;
+                        } else {
+                            discountText = 'Special Offer';
+                        }
+                        
+                        return {
+                            name: b.name,
+                            imageUrl: logoUrl,
+                            link: link,
+                            discount: b.discount || 0,
+                            discountText: discountText
+                        };
+                    });
+                    
+                    console.log(`✅ Loaded ${brandsData.length} brands from Brand Section config`);
+                    console.log(`📦 Brand data being passed to template:`, brandsData.map(b => ({
+                        name: b.name,
+                        imageUrl: b.imageUrl,
+                        link: b.link,
+                        discount: b.discount,
+                        discountText: b.discountText
+                    })));
+                    
+                    return {
+                        sectionId: section._id,
+                        title: section.title || '',
+                        subtitle: section.subtitle || '',
+                        brands: brandsData
+                    };
+
+                default:
+                    console.warn(`Unknown section type: ${section.type}`);
+                    return null;
+            }
+        } catch (error) {
+            console.error(`Error fetching data for section ${section.name}:`, error);
+            return null;
+        }
+    }
+
+    /**
+     * Render a section with its data
+     */
+    async function renderSection(section) {
+        if (!section.isActive || !section.isPublished) {
+            console.log(`⏭️ Skipping section ${section.name}: isActive=${section.isActive}, isPublished=${section.isPublished}`);
+            return null;
+        }
+
+        // Debug: Log section type and available mappings
+        console.log(`🔍 Looking for template for section type: "${section.type}"`, {
+            sectionName: section.name,
+            sectionType: section.type,
+            typeLength: section.type ? section.type.length : 0,
+            availableTypes: Object.keys(SECTION_TEMPLATES),
+            hasMapping: section.type in SECTION_TEMPLATES,
+            mappingValue: SECTION_TEMPLATES[section.type]
+        });
+        
+        const templateName = SECTION_TEMPLATES[section.type];
+        if (!templateName) {
+            console.warn(`⚠️ No template found for section type: "${section.type}"`, {
+                availableTypes: Object.keys(SECTION_TEMPLATES),
+                sectionType: section.type,
+                sectionTypeValue: JSON.stringify(section.type),
+                sectionTypeCharCodes: section.type ? Array.from(section.type).map(c => c.charCodeAt(0)) : []
+            });
+            return null;
+        }
+        
+        // Special logging for banner sections
+        if (section.type === 'bannerFullWidth') {
+            console.log(`🚩 BANNER: About to render ${section.name}`, {
+                templateName: templateName,
+                config: section.config
+            });
+        }
+
+        // Special logging for brand sections
+        if (section.type === 'brandSection') {
+            console.log(`🏷️ BRAND SECTION: About to render ${section.name}`, {
+                templateName: templateName,
+                config: section.config,
+                brandsCount: section.config?.brands?.length || 0
+            });
+        }
+
+        console.log(`📄 Loading template: ${templateName} for section type: ${section.type}`);
+        const template = await loadTemplate(templateName);
+        if (!template) {
+            console.error(`❌ Failed to load template: ${templateName}`);
+            return null;
+        }
+        console.log(`✅ Template loaded: ${templateName}`);
+
+        console.log(`📊 Fetching data for section: ${section.name}`);
+        const data = await fetchSectionData(section);
+        if (!data) {
+            console.warn(`⚠️ No data returned for section: ${section.name}`);
+            return null;
+        }
+        console.log(`✅ Data fetched for section: ${section.name}`, data);
+
+        console.log(`🎨 Rendering template with data...`);
+        console.log(`📊 Data being passed to template:`, Object.keys(data), data);
+        const html = renderTemplate(template, data);
+        if (!html || html.trim().length === 0) {
+            console.warn(`⚠️ Rendered HTML is empty for section: ${section.name}`);
+            return null;
+        }
+        console.log(`✅ Template rendered successfully for section: ${section.name}`);
+        console.log(`📝 Rendered HTML preview (first 200 chars):`, html.substring(0, 200));
+        
+        // Debug: Check if sectionType was rendered correctly
+        
+        return html;
+    }
+
+    /**
+     * Sort sections by location
+     */
+    function sortSectionsByLocation(sections) {
+        const sorted = [];
+        const processed = new Set();
+        const sectionMap = new Map(); // Map section IDs to their index in sorted array
+
+        // First, add sections with location 'top'
+        sections.forEach(section => {
+            const location = section.config && section.config.location;
+            if (location === 'top') {
+                sorted.push(section);
+                processed.add(section._id);
+                sectionMap.set(section._id, sorted.length - 1);
+            }
+        });
+
+        // Add sections without location BEFORE processing "after-section" references
+        // This ensures sections that are referenced by others are available
+        sections.forEach(section => {
+            if (processed.has(section._id)) return;
+            const location = section.config && section.config.location;
+            // If no location specified, add it now (it might be referenced by other sections)
+            if (!location || location === '') {
+                sorted.push(section);
+                processed.add(section._id);
+                sectionMap.set(section._id, sorted.length - 1);
+            }
+        });
+
+        // Then process sections with 'after-section-{id}' location
+        let changed = true;
+        let iterations = 0;
+        const maxIterations = sections.length * 3; // Increased iterations for complex dependencies
+        
+        while (changed && iterations < maxIterations) {
+            changed = false;
+            iterations++;
+            
+            sections.forEach(section => {
+                if (processed.has(section._id)) return;
+
+                const location = section.config && section.config.location;
+                if (location && location.startsWith('after-section-')) {
+                    const targetId = location.replace('after-section-', '');
+                    const targetIndex = sectionMap.get(targetId);
+                    
+                    if (targetIndex !== undefined && targetIndex !== -1) {
+                        // Insert after the target section
+                        sorted.splice(targetIndex + 1, 0, section);
+                        processed.add(section._id);
+                        
+                        // Update all indices in the map
+                        sectionMap.clear();
+                        sorted.forEach((s, idx) => {
+                            sectionMap.set(s._id, idx);
+                        });
+                        
+                        changed = true;
+                    } else {
+                        // Target not found yet - will try again in next iteration
+                        console.warn(`⚠️ Target section not found for "${section.name}": ${targetId}`);
+                    }
+                }
+            });
+        }
+
+        // Add remaining sections (with 'bottom' location) at the end
+        sections.forEach(section => {
+            if (!processed.has(section._id)) {
+                const location = section.config && section.config.location;
+                // If location is explicitly 'bottom', add at end
+                if (location === 'bottom') {
+                    sorted.push(section);
+                    processed.add(section._id);
+                } else {
+                    // This shouldn't happen, but log it for debugging
+                    console.warn(`⚠️ Section "${section.name}" not processed. Location: ${location || 'none'}`);
+                    // Add it anyway to prevent losing sections
+                    sorted.push(section);
+                    processed.add(section._id);
+                }
+            }
+        });
+
+        console.log('📐 Location sorting result:', sorted.map(s => ({
+            name: s.name,
+            type: s.type,
+            location: s.config?.location || 'none',
+            id: s._id
+        })));
+
+        return sorted;
+    }
+
+    /**
+     * Initialize sliders
+     */
+    function initSliders() {
+        // Hero sliders
+        document.querySelectorAll('.hero-slider').forEach(slider => {
+            const container = slider.querySelector('.hero-slider-container');
+            const slides = container.querySelectorAll('.hero-slide');
+            const dots = slider.querySelectorAll('.hero-slider-dot');
+            const prevBtn = slider.querySelector('.hero-slider-arrow.prev');
+            const nextBtn = slider.querySelector('.hero-slider-arrow.next');
+            const sectionId = slider.dataset.sectionId;
+            let currentSlide = 0;
+            let autoplayInterval = null;
+
+            function goToSlide(index) {
+                currentSlide = index;
+                container.style.transform = `translateX(-${currentSlide * 100}%)`;
+                dots.forEach((dot, i) => {
+                    dot.classList.toggle('active', i === currentSlide);
+                });
+            }
+
+            function nextSlide() {
+                currentSlide = (currentSlide + 1) % slides.length;
+                goToSlide(currentSlide);
+            }
+
+            function startAutoplay() {
+                // Stop any existing autoplay first
+                stopAutoplay();
+                
+                // Get autoplay config from data attribute or default to true
+                const autoplayAttr = slider.getAttribute('data-autoplay');
+                const autoplayEnabled = autoplayAttr === null || autoplayAttr === 'true' || autoplayAttr === '';
+                const autoplaySpeed = parseInt(slider.getAttribute('data-autoplay-interval')) || 3000;
+                
+                if (autoplayEnabled && slides.length > 1) {
+                    console.log(`🎠 Starting autoplay for slider ${sectionId} with interval ${autoplaySpeed}ms (${slides.length} slides)`);
+                    autoplayInterval = setInterval(() => {
+                        nextSlide();
+                    }, autoplaySpeed);
+                } else {
+                    console.log(`⏸️ Autoplay disabled or only 1 slide for slider ${sectionId} (enabled: ${autoplayEnabled}, slides: ${slides.length})`);
+                }
+            }
+
+            function stopAutoplay() {
+                if (autoplayInterval) {
+                    clearInterval(autoplayInterval);
+                    autoplayInterval = null;
+                }
+            }
+
+            if (prevBtn) {
+                prevBtn.addEventListener('click', () => {
+                    stopAutoplay();
+                    currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+                    goToSlide(currentSlide);
+                    startAutoplay();
+                });
+            }
+
+            if (nextBtn) {
+                nextBtn.addEventListener('click', () => {
+                    stopAutoplay();
+                    nextSlide();
+                    startAutoplay();
+                });
+            }
+
+            dots.forEach((dot, index) => {
+                dot.addEventListener('click', () => {
+                    stopAutoplay();
+                    goToSlide(index);
+                    startAutoplay();
+                });
+            });
+
+            startAutoplay();
+        });
+
+        // Product carousels
+        document.querySelectorAll('.product-carousel').forEach(carousel => {
+            const container = carousel.querySelector('.product-carousel-container');
+            const prevBtn = carousel.querySelector('.carousel-arrow.prev');
+            const nextBtn = carousel.querySelector('.carousel-arrow.next');
+
+            if (prevBtn) {
+                prevBtn.addEventListener('click', () => {
+                    container.scrollBy({ left: -container.offsetWidth * 0.8, behavior: 'smooth' });
+                });
+            }
+
+            if (nextBtn) {
+                nextBtn.addEventListener('click', () => {
+                    container.scrollBy({ left: container.offsetWidth * 0.8, behavior: 'smooth' });
+                });
+            }
+        });
+    }
+
+    /**
+     * Load and render all homepage sections
+     */
+    async function loadAndRenderHomepageSections() {
+        console.log('🚀 loadAndRenderHomepageSections CALLED!');
+        try {
+            console.log('🔄 Starting to load homepage sections...');
+            const container = document.getElementById('homepage-sections');
+            console.log('🔍 Container element:', container);
+            if (!container) {
+                console.error('❌ Homepage sections container (#homepage-sections) not found in DOM');
+                return;
+            }
+            console.log('✅ Container found:', container);
+
+            // Fetch sections from API (public endpoint - no auth required)
+            console.log('📡 Fetching sections from API: /api/homepage-sections/public');
+            const response = await fetch('/api/homepage-sections/public');
+            console.log('📡 API Response status:', response.status, response.statusText);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch homepage sections: ${response.status} ${response.statusText}`);
+            }
+
+            const sections = await response.json();
+            console.log(`✅ Loaded ${sections.length} sections from API`);
+            console.log('📋 All sections:', JSON.stringify(sections, null, 2));
+            
+            // Check specifically for banner sections
+            const bannerSections = sections.filter(s => s.type === 'bannerFullWidth');
+            console.log(`🚩 Found ${bannerSections.length} banner sections:`, bannerSections);
+            
+            if (!Array.isArray(sections) || sections.length === 0) {
+                console.warn('⚠️ No sections found or sections is not an array');
+                return;
+            }
+
+            // Filter active and published sections
+            const activeSections = sections.filter(s => s.isActive && s.isPublished);
+            console.log(`📋 Found ${activeSections.length} active and published sections`);
+
+            if (activeSections.length === 0) {
+                console.warn('⚠️ No active and published sections found');
+                return;
+            }
+            
+            // Sort sections by location
+            const sortedSections = sortSectionsByLocation(activeSections);
+            console.log('📐 Sorted sections by location:', sortedSections.map(s => ({ name: s.name, type: s.type, location: s.config?.location })));
+
+            // Render each section
+            let renderedCount = 0;
+            for (const section of sortedSections) {
+                console.log(`🎨 Rendering section: ${section.name} (${section.type})`, {
+                    id: section._id,
+                    type: section.type,
+                    isActive: section.isActive,
+                    isPublished: section.isPublished,
+                    config: section.config
+                });
+                
+                // Special logging for banner sections
+                if (section.type === 'bannerFullWidth') {
+                    console.log(`🚩 BANNER SECTION DETECTED: ${section.name}`, {
+                        config: section.config,
+                        imageUrl: section.config?.imageUrl,
+                        hasImageUrl: !!section.config?.imageUrl
+                    });
+                }
+                
+                try {
+                    const html = await renderSection(section);
+                    if (html) {
+                        console.log(`🔍 HTML for ${section.name} (first 300 chars):`, html.substring(0, 300));
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = html;
+                        console.log(`🔍 tempDiv children count:`, tempDiv.children.length);
+                        const sectionElement = tempDiv.firstElementChild;
+                        console.log(`🔍 sectionElement found:`, sectionElement ? 'YES' : 'NO', sectionElement ? sectionElement.tagName : 'N/A');
+                        if (sectionElement) {
+                            // Store section config for slider autoplay
+                            if (section.type === 'heroSlider' && section.config) {
+                                sectionElement.setAttribute('data-autoplay', section.config.autoplay !== false ? 'true' : 'false');
+                                sectionElement.setAttribute('data-autoplay-interval', section.config.autoplayInterval || 3000);
+                            }
+                            
+                            // Handle brand marquee vs brand grid display
+                            
+                            // Apply custom dimensions to banner images if specified
+                            if (section.type === 'bannerFullWidth') {
+                                const bannerImg = sectionElement.querySelector('img');
+                                if (bannerImg) {
+                                    // Check if image URL is valid
+                                    const imageUrl = bannerImg.getAttribute('src');
+                                    console.log(`🖼️ Banner image URL from DOM:`, imageUrl);
+                                    
+                                    if (!imageUrl || imageUrl === '' || imageUrl === 'null' || imageUrl === 'undefined') {
+                                        console.warn(`⚠️ Banner image URL is empty for section: ${section.name}`);
+                                        sectionElement.style.display = 'none';
+                                    } else {
+                                        // Add link if specified
+                                        if (section.config && section.config.link && section.config.link.trim() !== '') {
+                                            const link = document.createElement('a');
+                                            link.href = section.config.link;
+                                            link.setAttribute('aria-label', 'Banner link');
+                                            bannerImg.parentNode.insertBefore(link, bannerImg);
+                                            link.appendChild(bannerImg);
+                                        }
+                                        
+                                        // Ensure banner is visible
+                                        sectionElement.style.display = 'block';
+                                        sectionElement.style.visibility = 'visible';
+                                        sectionElement.style.opacity = '1';
+                                        
+                                        // Apply custom dimensions if sizing mode is 'custom'
+                                        const sizingMode = section.config.sizingMode || 'auto';
+                                        if (sizingMode === 'custom') {
+                                            const customWidth = sectionElement.getAttribute('data-custom-width');
+                                            const customHeight = sectionElement.getAttribute('data-custom-height');
+                                            const mobileHeight = sectionElement.getAttribute('data-mobile-height');
+                                            const tabletHeight = sectionElement.getAttribute('data-tablet-height');
+                                            const desktopHeight = sectionElement.getAttribute('data-desktop-height');
+                                            
+                                            // Apply custom width (if specified, otherwise 100%)
+                                            if (customWidth && customWidth !== 'null' && customWidth !== 'undefined' && customWidth !== '') {
+                                                sectionElement.style.maxWidth = customWidth + 'px';
+                                                sectionElement.style.margin = '0 auto';
+                                            }
+                                            
+                                            // Apply responsive heights using CSS custom properties
+                                            if (mobileHeight && mobileHeight !== 'null' && mobileHeight !== 'undefined' && mobileHeight !== '') {
+                                                sectionElement.style.setProperty('--banner-height-mobile', mobileHeight + 'px');
+                                            }
+                                            if (tabletHeight && tabletHeight !== 'null' && tabletHeight !== 'undefined' && tabletHeight !== '') {
+                                                sectionElement.style.setProperty('--banner-height-tablet', tabletHeight + 'px');
+                                            }
+                                            if (desktopHeight && desktopHeight !== 'null' && desktopHeight !== 'undefined' && desktopHeight !== '') {
+                                                sectionElement.style.setProperty('--banner-height-desktop', desktopHeight + 'px');
+                                            }
+                                            
+                                            // Apply default custom height if no responsive heights specified
+                                            if (customHeight && customHeight !== 'null' && customHeight !== 'undefined' && customHeight !== '') {
+                                                bannerImg.style.height = customHeight + 'px';
+                                                bannerImg.style.objectFit = 'cover';
+                                            }
+                                            
+                                            // Add custom-size class for CSS targeting
+                                            sectionElement.classList.add('custom-size');
+                                        }
+                                        
+                                        // Ensure image is visible
+                                        bannerImg.style.display = 'block';
+                                        bannerImg.style.width = '100%';
+                                        bannerImg.style.visibility = 'visible';
+                                        bannerImg.style.opacity = '1';
+                                        
+                                        // Handle image load error
+                                        bannerImg.onerror = function() {
+                                            console.error(`❌ Failed to load banner image: ${imageUrl}`);
+                                            sectionElement.style.display = 'none';
+                                        };
+                                        
+                                        // Log successful image load
+                                        bannerImg.onload = function() {
+                                            console.log(`✅ Banner image loaded successfully: ${imageUrl}`);
+                                        };
+                                    }
+                                } else {
+                                    console.error(`❌ No img element found in banner section: ${section.name}`);
+                                    console.error(`❌ Banner HTML:`, sectionElement.innerHTML);
+                                    sectionElement.style.display = 'none';
+                                }
+                            }
+                            
+                            container.appendChild(sectionElement);
+                            renderedCount++;
+                            console.log(`✅ Successfully rendered section: ${section.name}`);
+                        } else {
+                            console.warn(`⚠️ No element found in rendered HTML for section: ${section.name}`);
+                        }
+                    } else {
+                        console.warn(`⚠️ No HTML returned for section: ${section.name} (${section.type})`);
+                    }
+                } catch (sectionError) {
+                    console.error(`❌ Error rendering section ${section.name}:`, sectionError);
+                }
+            }
+
+            console.log(`✅ Successfully rendered ${renderedCount} sections`);
+
+            // Initialize sliders after rendering
+            if (renderedCount > 0) {
+                initSliders();
+                console.log('✅ Sliders initialized');
+            }
+
+        } catch (error) {
+            console.error('❌ Error loading homepage sections:', error);
+            console.error('Error stack:', error.stack);
+        }
+    }
+
+    // Export function to global scope immediately
+    window.loadAndRenderHomepageSections = loadAndRenderHomepageSections;
+    console.log('✅ home.js loaded - loadAndRenderHomepageSections function exported');
+    console.log('🔍 Script version: v21');
+    console.log('🔍 Current URL:', window.location.href);
+    console.log('🔍 DOM ready state:', document.readyState);
+
+    // Auto-load when DOM is ready
+    if (document.readyState === 'loading') {
+        console.log('⏳ DOM still loading, waiting for DOMContentLoaded...');
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('✅ DOMContentLoaded fired, calling loadAndRenderHomepageSections');
+            setTimeout(() => loadAndRenderHomepageSections(), 100);
+        });
+    } else {
+        console.log('✅ DOM already ready, calling loadAndRenderHomepageSections immediately');
+        setTimeout(() => loadAndRenderHomepageSections(), 100);
+    }
+
+    // Newsletter form handler
+    window.handleNewsletterSubmit = function(event) {
+        event.preventDefault();
+        const email = event.target.querySelector('input[type="email"]').value;
+        // TODO: Implement newsletter subscription API call
+        console.log('Newsletter subscription:', email);
+        alert('Thank you for subscribing!');
+        event.target.reset();
+    };
+
+    // Add to cart handler (placeholder)
+    window.addToCart = function(productId) {
+        // TODO: Implement add to cart functionality
+        console.log('Add to cart:', productId);
+        alert('Product added to cart!');
+    };
+
+})();
+

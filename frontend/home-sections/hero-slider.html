@@ -1,0 +1,22 @@
+<!-- Hero Slider Section -->
+<div class="hero-slider" data-section-id="{{sectionId}}" data-autoplay="{{autoplay}}" data-autoplay-interval="{{autoplayInterval}}">
+    <div class="hero-slider-container" id="heroSliderContainer-{{sectionId}}">
+        {{#each slides}}
+        <div class="hero-slide">
+            <img src="{{imageUrl}}" alt="{{altText}}" loading="{{#if @first}}eager{{else}}lazy{{/if}}">
+        </div>
+        {{/each}}
+    </div>
+    {{#if showArrows}}
+    <button class="hero-slider-arrow prev" aria-label="Previous slide" data-slider-id="{{sectionId}}">‹</button>
+    <button class="hero-slider-arrow next" aria-label="Next slide" data-slider-id="{{sectionId}}">›</button>
+    {{/if}}
+    {{#if showDots}}
+    <div class="hero-slider-nav" id="heroSliderNav-{{sectionId}}">
+        {{#each slides}}
+        <button class="hero-slider-dot {{#if @first}}active{{/if}}" data-slide-index="{{@index}}" aria-label="Go to slide {{@index}}" data-slider-id="{{sectionId}}"></button>
+        {{/each}}
+    </div>
+    {{/if}}
+</div>
+

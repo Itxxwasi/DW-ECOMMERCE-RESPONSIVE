@@ -1,0 +1,17 @@
+<!-- Newsletter & Social Section -->
+<section class="newsletter-social home-section" data-section-id="{{sectionId}}" style="background-color: {{backgroundColor}}; color: {{textColor}};">
+    {{#if title}}<h3>{{title}}</h3>{{/if}}
+    {{#if subtitle}}<p>{{subtitle}}</p>{{/if}}
+    <form class="newsletter-form" onsubmit="handleNewsletterSubmit(event)">
+        <input type="email" placeholder="Enter your email" required aria-label="Email address">
+        <button type="submit">Subscribe</button>
+    </form>
+    <div class="social-links">
+        {{#each socialLinks}}
+        <a href="{{url}}" target="_blank" rel="noopener noreferrer" aria-label="{{platform}}">
+            <i class="{{iconClass}}"></i>
+        </a>
+        {{/each}}
+    </div>
+</section>
+
