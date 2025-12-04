@@ -350,9 +350,8 @@
         display: none !important;
     }
     
-    /* Product Grids - Convert to horizontal scroll */
-    #productsGrid,
-    .products-grid,
+    /* Product Grids - Keep as grid layout (don't convert to horizontal scroll for products page) */
+    /* Only convert carousels to horizontal scroll, not product grids */
     .row.has-product-cards,
     .product-row-scroll {
         display: flex !important;
@@ -369,16 +368,13 @@
         gap: 15px;
     }
     
-    #productsGrid::-webkit-scrollbar,
-    .products-grid::-webkit-scrollbar,
     .row.has-product-cards::-webkit-scrollbar,
     .product-row-scroll::-webkit-scrollbar {
         display: none;
     }
     
-    /* Product cards in grid - make them scrollable */
-    #productsGrid > [class*="col-"],
-    .products-grid > [class*="col-"],
+    /* Product cards in carousels - make them scrollable */
+    .row.has-product-cards > [class*="col-"],
     .row.has-product-cards > [class*="col-"],
     .product-row-scroll > [class*="col-"] {
         flex: 0 0 calc(50% - 7.5px) !important;
@@ -393,14 +389,12 @@
     /* Very small screens - show one product at a time with peek */
     @media (max-width: 480px) {
         .product-carousel__slide,
-        #productsGrid > [class*="col-"],
-        .products-grid > [class*="col-"],
-        .row.has-product-cards > [class*="col-"],
-        .product-row-scroll > [class*="col-"] {
-            min-width: calc(85% - 10px) !important;
-            max-width: calc(85% - 10px) !important;
-            flex: 0 0 calc(85% - 10px) !important;
-        }
+    .row.has-product-cards > [class*="col-"],
+    .product-row-scroll > [class*="col-"] {
+        min-width: calc(85% - 10px) !important;
+        max-width: calc(85% - 10px) !important;
+        flex: 0 0 calc(85% - 10px) !important;
+    }
     }
     
     /* Categories grid - keep vertical on mobile */
@@ -652,8 +646,6 @@
         flex: 0 0 calc(85% - 10px) !important;
     }
     
-    #productsGrid > [class*="col-"],
-    .products-grid > [class*="col-"],
     .row.has-product-cards > [class*="col-"],
     .product-row-scroll > [class*="col-"] {
         min-width: calc(85% - 10px) !important;
@@ -844,8 +836,6 @@
     /* Use CSS touch-action to handle scroll direction without JS */
     .product-carousel__wrapper,
     .brand-marquee-carousel__wrapper,
-    #productsGrid,
-    .products-grid,
     .row.has-product-cards,
     .product-row-scroll {
         overflow-x: auto !important;
@@ -856,6 +846,19 @@
         overscroll-behavior-y: none;
         /* Performance hint for better scrolling */
         will-change: scroll-position;
+    }
+    
+    /* Product grids should NOT have horizontal scroll - use grid layout */
+    /* Override Bootstrap row class for product grids */
+    #productsGrid,
+    .products-grid,
+    #productsGrid.row,
+    .products-grid.row {
+        overflow: visible !important;
+        overflow-x: visible !important;
+        overflow-y: visible !important;
+        display: grid !important; /* Force grid, override Bootstrap flex */
+        flex-direction: unset !important; /* Remove flex direction */
     }
     
     /* Prevent other elements from causing horizontal scroll */

@@ -3,9 +3,9 @@
  * Provides offline caching and performance optimization
  */
 
-const CACHE_NAME = 'dwatson-v2';
-const STATIC_CACHE_NAME = 'dwatson-static-v2';
-const API_CACHE_NAME = 'dwatson-api-v2';
+const CACHE_NAME = 'dwatson-v3';
+const STATIC_CACHE_NAME = 'dwatson-static-v3';
+const API_CACHE_NAME = 'dwatson-api-v3';
 
 // Assets to cache immediately on install
 const STATIC_ASSETS = [
@@ -79,6 +79,19 @@ self.addEventListener('fetch', (event) => {
         return;
     }
     
+    // Skip external resources (different origin) - let browser handle them
+    // This prevents errors with CDN resources, browser extensions, etc.
+    if (url.origin !== self.location.origin) {
+        return; // Don't intercept external requests - let browser handle them directly
+    }
+    
+    // Additional check: Skip known external CDN domains
+    const externalDomains = ['cdn.aitopia.com', 'cdnjs.cloudflare.com', 'cdn.jsdelivr.net', 
+                             'fonts.googleapis.com', 'fonts.gstatic.com', 'maxst.icons8.com'];
+    if (externalDomains.some(domain => url.hostname.includes(domain))) {
+        return; // Skip external CDN requests
+    }
+    
     // Skip non-cacheable URL schemes (chrome-extension, file, data, blob, etc.)
     if (!isCacheableUrl(url)) {
         return;
@@ -94,11 +107,11 @@ self.addEventListener('fetch', (event) => {
         event.respondWith(
             caches.open(API_CACHE_NAME).then((cache) => {
                 return fetch(request).then((response) => {
-                    // Cache successful API responses (only if URL is cacheable)
-                    if (response.status === 200 && isCacheableUrl(url)) {
+                    // Cache successful API responses (only if URL is cacheable and same origin)
+                    if (response.status === 200 && isCacheableUrl(url) && url.origin === self.location.origin) {
                         const responseClone = response.clone();
-                        cache.put(request, responseClone).catch((err) => {
-                            console.warn('[SW] Failed to cache API response:', request.url, err);
+                        cache.put(request, responseClone).catch(() => {
+                            // Silently fail - don't log cache errors
                         });
                     }
                     return response;
@@ -135,8 +148,8 @@ self.addEventListener('fetch', (event) => {
                     if (!response || response.status !== 200) {
                         return response;
                     }
-                    // Only cache if URL is cacheable
-                    if (isCacheableUrl(url)) {
+                    // Only cache if URL is cacheable and from same origin
+                    if (isCacheableUrl(url) && url.origin === self.location.origin) {
                         const responseToCache = response.clone();
                         caches.open(STATIC_CACHE_NAME).then((cache) => {
                             cache.put(request, responseToCache).catch((err) => {
@@ -145,6 +158,16 @@ self.addEventListener('fetch', (event) => {
                         });
                     }
                     return response;
+                }).catch((error) => {
+                    // For same-origin failures, try cache
+                    return caches.match(request).catch(() => {
+                        // Return a proper error response if cache also fails
+                        return new Response('Resource not available', { 
+                            status: 404,
+                            statusText: 'Not Found',
+                            headers: { 'Content-Type': 'text/plain' }
+                        });
+                    });
                 });
             })
         );

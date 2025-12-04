@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="/css/dwatson-styles.css?v=2">
     <link rel="stylesheet" href="/css/mobile-fix.css?v=1">
     <link rel="stylesheet" href="/css/global-responsive.css?v=1">
+    <link rel="stylesheet" href="/css/pages-responsive.css?v=2">
     <script src="/js/mobile-scroll-helper.js?v=1" defer></script>
 </head>
 <body>
@@ -287,12 +288,25 @@
         <!-- Filters and Products -->
         <section class="py-5">
             <div class="container">
+                <!-- Filter Toggle Button (Mobile Only) -->
+                <div class="filter-toggle-btn">
+                    <button class="btn" id="filterToggleBtn">
+                        <i class="fas fa-filter"></i> Filters
+                    </button>
+                </div>
+                
+                <!-- Filter Overlay (Mobile Only) -->
+                <div class="filter-overlay" id="filterOverlay"></div>
+                
                 <div class="row">
                     <!-- Sidebar Filters -->
-                    <div class="col-lg-3 mb-4">
+                    <div class="col-lg-3 mb-4 filter-sidebar" id="filterSidebar">
                         <div class="card shadow-sm">
-                            <div class="card-header bg-primary text-white">
+                            <div class="card-header bg-primary text-white position-relative">
                                 <h5 class="mb-0"><i class="fas fa-filter"></i> Filters</h5>
+                                <button class="filter-close-btn" id="filterCloseBtn" aria-label="Close filters">
+                                    <i class="fas fa-times"></i>
+                                </button>
                             </div>
                             <div class="card-body">
                                 <!-- Search -->
@@ -366,7 +380,7 @@
 
                         <div id="productsInfo" class="mb-3 text-muted"></div>
 
-                        <div class="row g-4" id="productsGrid">
+                        <div class="products-grid" id="productsGrid">
                             <!-- Products will be loaded here -->
                         </div>
 
@@ -392,6 +406,32 @@
     <footer class="footer" id="siteFooter">
         <!-- Footer content will be loaded dynamically from database -->
     </footer>
+
+    <!-- Footer Loading Script -->
+    <script>
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                if (typeof window.loadFooter === 'function') {
+                    window.loadFooter();
+                }
+            }, 1000);
+        });
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                setTimeout(function() {
+                    if (typeof window.loadFooter === 'function') {
+                        window.loadFooter();
+                    }
+                }, 1500);
+            });
+        } else {
+            setTimeout(function() {
+                if (typeof window.loadFooter === 'function') {
+                    window.loadFooter();
+                }
+            }, 1500);
+        }
+    </script>
 
     <!-- Mobile Bottom Navigation Bar -->
     <nav class="mobile-bottom-nav">

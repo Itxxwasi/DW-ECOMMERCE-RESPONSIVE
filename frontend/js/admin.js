@@ -1,4 +1,46 @@
  $(document).ready(function() {
+    // Sidebar toggle functionality - unified handler
+    function toggleSidebar() {
+        const sidebar = $('.sidebar');
+        const overlay = $('#sidebarOverlay');
+        
+        if (sidebar.hasClass('active')) {
+            sidebar.removeClass('active');
+            overlay.removeClass('active');
+            $('body').css('overflow', '');
+        } else {
+            sidebar.addClass('active');
+            overlay.addClass('active');
+            $('body').css('overflow', 'hidden');
+        }
+    }
+    
+    // Sidebar toggle button - use event delegation to prevent conflicts
+    $(document).off('click', '#sidebarToggle').on('click', '#sidebarToggle', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        toggleSidebar();
+    });
+    
+    // Close sidebar when overlay is clicked
+    $(document).off('click', '#sidebarOverlay').on('click', '#sidebarOverlay', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $('.sidebar').removeClass('active');
+        $(this).removeClass('active');
+        $('body').css('overflow', '');
+    });
+    
+    // Close sidebar on window resize if desktop
+    $(window).on('resize', function() {
+        if ($(window).width() > 991) {
+            $('.sidebar').removeClass('active');
+            $('#sidebarOverlay').removeClass('active');
+            $('body').css('overflow', '');
+        }
+    });
+    
     // Check if user is logged in
     const token = localStorage.getItem('token');
     if (!token) {
@@ -70,7 +112,20 @@
         if (window.innerWidth <= 991) {
             $('.sidebar').removeClass('active');
             $('#sidebarOverlay').removeClass('active');
+            $('body').css('overflow', '');
         }
+        
+        // Ensure section is visible
+        setTimeout(function() {
+            const section = $(`#${sectionId}`);
+            if (section.length) {
+                section.css({
+                    'display': 'block',
+                    'visibility': 'visible',
+                    'opacity': '1'
+                }).addClass('active');
+            }
+        }, 100);
         
         // Load data for the section
         loadSectionData(sectionId);
@@ -93,31 +148,8 @@
         });
     }
 
-    // Sidebar toggle for mobile/tablet - use event delegation to prevent multiple handlers
-    $(document).off('click', '#sidebarToggle').on('click', '#sidebarToggle', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        e.stopImmediatePropagation();
-        
-        const sidebar = $('.sidebar');
-        const overlay = $('#sidebarOverlay');
-        
-        if (sidebar.hasClass('active')) {
-            sidebar.removeClass('active');
-            overlay.removeClass('active');
-        } else {
-            sidebar.addClass('active');
-            overlay.addClass('active');
-        }
-    });
-    
-    // Close sidebar when overlay is clicked - use event delegation
-    $(document).off('click', '#sidebarOverlay').on('click', '#sidebarOverlay', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        $('.sidebar').removeClass('active');
-        $(this).removeClass('active');
-    });
+    // Note: Sidebar toggle is now handled at the top of the document ready function
+    // This prevents duplicate handlers
     
     // Close sidebar when clicking outside on mobile - improved logic
     $(document).off('click.sidebarClose').on('click.sidebarClose', function(e) {

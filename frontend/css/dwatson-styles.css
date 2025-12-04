@@ -6491,13 +6491,30 @@ body.mobile-menu-open {
     letter-spacing: 2px;
 }
 
-/* Product Cards Grid - Mobile: 2 columns */
+/* Product Cards Grid - Mobile: 1 column (mobile-first) */
 .product-grid,
 .product-tabs__content .row {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr; /* Mobile-first: 1 column */
     gap: 8px;
     padding: 0 10px;
+}
+
+/* Tablet: 2 columns */
+@media (min-width: 768px) {
+    .product-grid,
+    .product-tabs__content .row {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+}
+
+/* Desktop: 3-4 columns */
+@media (min-width: 992px) {
+    .product-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+    }
 }
 
 .product-card {

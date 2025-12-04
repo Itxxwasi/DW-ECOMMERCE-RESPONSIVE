@@ -1,0 +1,798 @@
+/* Pages Responsive CSS - Mobile-First Design for All Pages */
+/* Matches main page responsive patterns from home.css */
+
+/* ============================================
+   BASE STYLES (MOBILE FIRST - 320px+)
+   ============================================ */
+
+* {
+    box-sizing: border-box;
+}
+
+/* ============================================
+   PRODUCTS PAGE CONTAINER - MOBILE FIRST
+   ============================================ */
+
+/* Mobile: Make product container full width */
+@media (max-width: 767px) {
+    /* Products page row container */
+    .container .row {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+    
+    /* Product grid column - full width on mobile */
+    .container .row > .col-lg-9,
+    .container .row > .col-md-9 {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        flex: 0 0 100% !important;
+    }
+    
+    /* Filter sidebar column - hidden on mobile (handled by filter toggle) */
+    .container .row > .col-lg-3.filter-sidebar,
+    .container .row > .col-md-3.filter-sidebar {
+        width: 100% !important;
+        max-width: 100% !important;
+        flex: 0 0 100% !important;
+    }
+}
+
+/* ============================================
+   SIDE FILTER MOBILE HANDLING
+   ============================================ */
+
+/* Filter Toggle Button - Hidden on desktop, visible on mobile */
+.filter-toggle-btn {
+    display: none;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #fff;
+    padding: 12px 15px;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 15px;
+}
+
+.filter-toggle-btn .btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    background: #c42525;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.filter-toggle-btn .btn:hover {
+    background: #a01f1f;
+}
+
+/* Filter Sidebar - Mobile Handling */
+.filter-sidebar,
+.filter-panel,
+.col-lg-3.filter-sidebar {
+    width: 100%;
+}
+
+/* Mobile: Hide filters by default, show as slide-in */
+@media (max-width: 767px) {
+    .filter-sidebar,
+    .filter-panel,
+    .col-lg-3.filter-sidebar {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        max-width: 320px;
+        height: 100vh;
+        background: #fff;
+        z-index: 1001;
+        overflow-y: auto;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        padding: 20px 15px;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+    
+    .filter-sidebar.active,
+    .filter-panel.active,
+    .col-lg-3.filter-sidebar.active {
+        display: block;
+        transform: translateX(0);
+    }
+    
+    .filter-toggle-btn {
+        display: block;
+    }
+    
+    /* Filter overlay when sidebar is open */
+    .filter-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        background: rgba(0,0,0,0.5);
+        z-index: 1000;
+    }
+    
+    .filter-overlay.active {
+        display: block;
+    }
+    
+    /* Close button in filter panel */
+    .filter-close-btn {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: transparent;
+        border: none;
+        font-size: 24px;
+        color: #333;
+        cursor: pointer;
+        z-index: 1002;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+/* Tablet: Filters can be collapsible or shown above products */
+@media (min-width: 768px) and (max-width: 991px) {
+    .filter-sidebar,
+    .filter-panel,
+    .col-lg-3.filter-sidebar {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+    
+    .filter-toggle-btn {
+        display: block;
+    }
+    
+    .col-lg-3.filter-sidebar.collapsed {
+        display: none;
+    }
+}
+
+/* Desktop: Sidebar filters as currently implemented */
+@media (min-width: 992px) {
+    .filter-sidebar,
+    .filter-panel,
+    .col-lg-3.filter-sidebar {
+        display: block !important;
+        position: relative;
+        width: auto;
+        height: auto;
+        transform: none;
+        box-shadow: none;
+    }
+    
+    .filter-toggle-btn {
+        display: none;
+    }
+    
+    .filter-overlay {
+        display: none !important;
+    }
+}
+
+/* ============================================
+   PRODUCT GRID - MOBILE FIRST (OVERRIDE BOOTSTRAP)
+   ============================================ */
+
+/* Base: Mobile-first 1 column (320px+) */
+.products-grid,
+#productsGrid,
+.product-grid,
+#productsGrid.row,
+.products-grid.row,
+.row#productsGrid,
+.row.products-grid {
+    display: grid !important; /* Force grid layout, override Bootstrap's flex */
+    grid-template-columns: 1fr !important; /* Mobile-first: 1 column */
+    gap: 15px !important;
+    padding: 0 10px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: visible !important; /* Prevent horizontal scroll */
+    flex-wrap: wrap !important; /* Override any flex-wrap: nowrap */
+    margin-left: 0 !important; /* Override Bootstrap row negative margins */
+    margin-right: 0 !important;
+    flex-direction: unset !important; /* Remove flex direction from Bootstrap */
+    box-sizing: border-box !important;
+}
+
+/* Product cards in grid */
+.products-grid .product-card,
+#productsGrid .product-card,
+.product-grid .product-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important; /* Prevent flex items from overflowing */
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex !important; /* Force flex display */
+    flex-direction: column;
+    position: relative; /* Ensure proper positioning */
+    margin: 0 !important; /* Remove any margins that could cause overlap */
+    flex-shrink: 0; /* Prevent cards from shrinking */
+}
+
+.products-grid .product-card:hover,
+#productsGrid .product-card:hover,
+.product-grid .product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.products-grid .product-card-image,
+#productsGrid .product-card-image,
+.product-grid .product-card-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    background: #f5f5f5;
+}
+
+.products-grid .product-card-info,
+#productsGrid .product-card-info,
+.product-grid .product-card-info {
+    padding: 12px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.products-grid .product-card-title,
+#productsGrid .product-card-title,
+.product-grid .product-card-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #333;
+    line-height: 1.4;
+    display: -webkit-box;
+    line-clamp: 2;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.products-grid .product-card-price,
+#productsGrid .product-card-price,
+.product-grid .product-card-price {
+    font-size: 16px;
+    font-weight: 700;
+    color: #c42525;
+    margin-bottom: 10px;
+}
+
+.products-grid .product-card-button,
+#productsGrid .product-card-button,
+.product-grid .product-card-button {
+    width: 100%;
+    padding: 10px;
+    background: #ffc0cb;
+    color: #333;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin-top: auto;
+}
+
+.products-grid .product-card-button:hover,
+#productsGrid .product-card-button:hover,
+.product-grid .product-card-button:hover {
+    background: #ffb0c0;
+}
+
+/* Tablet: 2 columns */
+@media (min-width: 768px) {
+    .products-grid,
+    #productsGrid,
+    .product-grid,
+    #productsGrid.row,
+    .products-grid.row,
+    .row#productsGrid,
+    .row.products-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 20px !important;
+        padding: 0 15px !important;
+    }
+    
+    .products-grid .product-card-image,
+    #productsGrid .product-card-image,
+    .product-grid .product-card-image {
+        height: 220px;
+    }
+}
+
+/* Desktop: 3-4 columns */
+@media (min-width: 992px) {
+    .products-grid,
+    #productsGrid,
+    .product-grid,
+    #productsGrid.row,
+    .products-grid.row,
+    .row#productsGrid,
+    .row.products-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 25px !important;
+        padding: 0 20px !important;
+    }
+    
+    .products-grid .product-card-image,
+    #productsGrid .product-card-image,
+    .product-grid .product-card-image {
+        height: 250px;
+    }
+}
+
+/* Large Desktop: 4 columns for products page */
+@media (min-width: 1200px) {
+    .products-grid,
+    #productsGrid,
+    #productsGrid.row,
+    .row#productsGrid {
+        grid-template-columns: repeat(4, 1fr) !important;
+    }
+}
+
+/* ============================================
+   TYPOGRAPHY SCALING
+   ============================================ */
+
+.page-title,
+.section-title {
+    font-family: "Montserrat", sans-serif;
+    font-weight: 600;
+    font-size: 20px;
+    margin-bottom: 15px;
+    text-align: center;
+    color: #333;
+}
+
+.page-subtitle,
+.section-subtitle {
+    font-family: "Inter", sans-serif;
+    font-size: 14px;
+    color: #666;
+    text-align: center;
+    margin-bottom: 20px;
+    display: block;
+    line-height: 1.5;
+    padding: 0 10px;
+}
+
+@media (min-width: 768px) {
+    .page-title,
+    .section-title {
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+    
+    .page-subtitle,
+    .section-subtitle {
+        font-size: 16px;
+        margin-bottom: 25px;
+        padding: 0 15px;
+    }
+}
+
+@media (min-width: 992px) {
+    .page-title,
+    .section-title {
+        font-size: 32px;
+        margin-bottom: 25px;
+    }
+    
+    .page-subtitle,
+    .section-subtitle {
+        font-size: 18px;
+        margin-bottom: 30px;
+        padding: 0 20px;
+    }
+}
+
+/* ============================================
+   SPACING ADJUSTMENTS
+   ============================================ */
+
+.main-content,
+.page-content {
+    width: 100%;
+    padding: 20px 15px;
+    margin-bottom: 20px;
+}
+
+@media (min-width: 768px) {
+    .main-content,
+    .page-content {
+        padding: 30px 20px;
+        margin-bottom: 30px;
+    }
+}
+
+@media (min-width: 992px) {
+    .main-content,
+    .page-content {
+        padding: 40px 30px;
+        margin-bottom: 40px;
+    }
+}
+
+/* ============================================
+   BUTTON AND FORM ELEMENT SIZING
+   ============================================ */
+
+.btn {
+    padding: 12px 20px;
+    font-size: 14px;
+    border-radius: 6px;
+    min-height: 44px; /* Minimum touch target */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-lg {
+    padding: 14px 24px;
+    font-size: 16px;
+    min-height: 48px;
+}
+
+.btn-sm {
+    padding: 10px 16px;
+    font-size: 13px;
+    min-height: 40px;
+}
+
+.form-control,
+.form-select {
+    padding: 12px;
+    font-size: 16px; /* Prevents iOS zoom */
+    border-radius: 6px;
+    min-height: 44px; /* Minimum touch target */
+    width: 100%;
+}
+
+.form-label {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    display: block;
+}
+
+@media (min-width: 768px) {
+    .btn {
+        padding: 12px 24px;
+        font-size: 15px;
+    }
+    
+    .form-control,
+    .form-select {
+        padding: 10px 12px;
+        font-size: 15px;
+    }
+}
+
+/* ============================================
+   CARD AND CONTAINER PADDING/MARGINS
+   ============================================ */
+
+.card {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.card-header {
+    padding: 15px;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.card-body {
+    padding: 15px;
+}
+
+@media (min-width: 768px) {
+    .card-header {
+        padding: 20px;
+        font-size: 18px;
+    }
+    
+    .card-body {
+        padding: 20px;
+    }
+}
+
+@media (min-width: 992px) {
+    .card {
+        margin-bottom: 30px;
+    }
+    
+    .card-header {
+        padding: 25px;
+    }
+    
+    .card-body {
+        padding: 25px;
+    }
+}
+
+/* ============================================
+   BREADCRUMB RESPONSIVE
+   ============================================ */
+
+.breadcrumb {
+    font-size: 13px;
+    padding: 10px 0;
+    margin-bottom: 15px;
+}
+
+.breadcrumb-item {
+    display: inline-block;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: "/";
+    padding: 0 8px;
+    color: #666;
+}
+
+@media (min-width: 768px) {
+    .breadcrumb {
+        font-size: 14px;
+        padding: 15px 0;
+        margin-bottom: 20px;
+    }
+}
+
+/* ============================================
+   PRODUCT DETAIL PAGE RESPONSIVE
+   ============================================ */
+
+/* Product detail page - stack image and info on mobile */
+@media (max-width: 767px) {
+    .product-detail-page .row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+    
+    .product-detail-page .col-md-6,
+    .product-detail-page .col-lg-6 {
+        width: 100%;
+        padding-left: 15px;
+        padding-right: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .product-image-section {
+        margin-bottom: 20px;
+    }
+    
+    .product-info-section {
+        padding: 0 15px;
+    }
+    
+    .product-title {
+        font-size: 22px;
+        margin-bottom: 15px;
+    }
+    
+    .product-price {
+        font-size: 24px;
+        margin-bottom: 15px;
+    }
+    
+    .product-description {
+        font-size: 14px;
+        line-height: 1.6;
+        margin-bottom: 20px;
+    }
+    
+    .add-to-cart-section {
+        padding: 15px;
+        margin-top: 20px;
+    }
+    
+    .quantity-controls {
+        width: 100%;
+        max-width: 200px;
+        margin: 0 auto 15px;
+    }
+    
+    .btn-add-to-cart {
+        width: 100%;
+        padding: 14px;
+        font-size: 16px;
+    }
+}
+
+/* ============================================
+   CONTACT PAGE RESPONSIVE
+   ============================================ */
+
+@media (max-width: 767px) {
+    .contact-page .row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+    
+    .contact-page .col-md-6,
+    .contact-page .col-lg-6 {
+        width: 100%;
+        padding-left: 15px;
+        padding-right: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .contact-form {
+        padding: 20px 15px;
+    }
+    
+    .contact-info {
+        padding: 20px 15px;
+        margin-top: 20px;
+    }
+    
+    .form-control,
+    .form-select,
+    textarea.form-control {
+        font-size: 16px; /* Prevents iOS zoom */
+        padding: 12px;
+        min-height: 44px;
+    }
+    
+    .btn-submit {
+        width: 100%;
+        padding: 14px;
+        font-size: 16px;
+    }
+}
+
+/* ============================================
+   ABOUT PAGE RESPONSIVE
+   ============================================ */
+
+@media (max-width: 767px) {
+    .about-page .row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+    
+    .about-page .col-md-6,
+    .about-page .col-lg-6 {
+        width: 100%;
+        padding-left: 15px;
+        padding-right: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .about-content {
+        padding: 20px 15px;
+    }
+    
+    .about-image {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+.mobile-only {
+    display: block;
+}
+
+.desktop-only {
+    display: none;
+}
+
+@media (min-width: 992px) {
+    .mobile-only {
+        display: none;
+    }
+    
+    .desktop-only {
+        display: block;
+    }
+}
+
+/* Prevent horizontal scroll */
+.page-wrapper {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+}
+
+/* Ensure images are responsive */
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* ============================================
+   CATEGORY/SUBCATEGORY GRID RESPONSIVE
+   ============================================ */
+
+.category-grid,
+.subcategory-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    padding: 0 10px;
+}
+
+@media (min-width: 768px) {
+    .category-grid,
+    .subcategory-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        padding: 0 15px;
+    }
+}
+
+@media (min-width: 992px) {
+    .category-grid,
+    .subcategory-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 25px;
+        padding: 0 20px;
+    }
+}
+
+/* ============================================
+   DEPARTMENT GRID RESPONSIVE
+   ============================================ */
+
+.department-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+    padding: 0 10px;
+}
+
+@media (min-width: 768px) {
+    .department-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+        padding: 0 15px;
+    }
+}
+
+@media (min-width: 992px) {
+    .department-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 25px;
+        padding: 0 20px;
+    }
+}
+

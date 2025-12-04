@@ -98,29 +98,23 @@ function renderProducts(products) {
         const categoryName = product.category?.name || 'Uncategorized';
         
         return `
-            <div class="col-lg-3 col-md-4 col-sm-6">
-                <div class="card h-100 shadow-sm product-card">
-                    <div class="position-relative product-img">
-                        <img src="${productImage}" alt="${product.name}">
-                        ${product.discount > 0 ? `<span class="badge bg-danger position-absolute top-0 end-0 m-2">-${product.discount}%</span>` : ''}
+            <div class="product-card">
+                <a href="/product.html?id=${productId}" style="position: relative; display: block;">
+                    <img src="${productImage}" alt="${product.name}" class="product-card-image">
+                    ${product.discount > 0 ? `<span class="badge bg-danger" style="position: absolute; top: 8px; right: 8px; padding: 4px 8px;">-${product.discount}%</span>` : ''}
+                </a>
+                <div class="product-card-info">
+                    <small class="text-muted d-block mb-1" style="font-size: 12px;">${categoryName}</small>
+                    <a href="/product.html?id=${productId}" style="text-decoration: none; color: inherit;">
+                        <h3 class="product-card-title">${product.name}</h3>
+                    </a>
+                    <div class="product-card-price">
+                        Rs. ${finalPrice.toFixed(2)}
+                        ${product.discount > 0 ? `<small class="text-muted text-decoration-line-through" style="margin-left: 8px;">Rs. ${product.price.toFixed(2)}</small>` : ''}
                     </div>
-                    <div class="card-body d-flex flex-column">
-                        <small class="text-muted">${categoryName}</small>
-                        <h6 class="card-title mt-2">${product.name}</h6>
-                        <p class="card-text text-muted small flex-grow-1">${product.description ? (product.description.substring(0, 100) + (product.description.length > 100 ? '...' : '')) : ''}</p>
-                        <div class="mt-auto">
-                            <div class="mb-2">
-                                <strong class="text-primary">Rs. ${finalPrice.toFixed(2)}</strong>
-                                ${product.discount > 0 ? `<small class="text-muted text-decoration-line-through ms-2">Rs. ${product.price.toFixed(2)}</small>` : ''}
-                            </div>
-                            <div class="d-grid gap-2">
-                                <button class="btn btn-primary add-to-cart" data-id="${productId}" data-product-id="${productId}">
-                                    <i class="fas fa-shopping-cart"></i> Add to Cart
-                                </button>
-                                <a href="/product/${productId}" class="btn btn-outline-primary btn-sm">View Details</a>
-                            </div>
-                        </div>
-                    </div>
+                    <button class="product-card-button add-to-cart" data-id="${productId}" data-product-id="${productId}">
+                        Add to Cart
+                    </button>
                 </div>
             </div>
         `;
