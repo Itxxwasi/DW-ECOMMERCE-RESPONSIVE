@@ -203,6 +203,7 @@
                     // Announcement bar - data comes from config
                     return {
                         sectionId: section._id,
+                        sectionName: section.name || '',
                         backgroundColor: section.config.backgroundColor || '#c42525',
                         textColor: section.config.textColor || '#ffffff',
                         items: section.config.items || [],
@@ -300,9 +301,28 @@
                 case 'categoryFeatured':
                 case 'categoryGrid':
                 case 'categoryCircles':
-                    // Categories - fetch from categories API
-                    const categoryResponse = await fetch('/api/categories?limit=8');
-                    const categories = await categoryResponse.json();
+                    // Categories - fetch selected categories or all if no selection
+                    let categories = [];
+                    if (section.config?.categoryIds && section.config.categoryIds.length > 0) {
+                        // Fetch only selected categories
+                        const categoryResponse = await fetch('/api/categories');
+                        const allCategories = await categoryResponse.json();
+                        // Filter to only selected categories, maintaining order
+                        const selectedCategoryMap = new Map();
+                        allCategories.forEach(cat => {
+                            if (section.config.categoryIds.includes(cat._id)) {
+                                selectedCategoryMap.set(cat._id, cat);
+                            }
+                        });
+                        // Maintain the order from config.categoryIds
+                        categories = section.config.categoryIds
+                            .map(id => selectedCategoryMap.get(id))
+                            .filter(cat => cat !== undefined);
+                    } else {
+                        // Fallback: fetch all categories (limit 8)
+                        const categoryResponse = await fetch('/api/categories?limit=8');
+                        categories = await categoryResponse.json();
+                    }
                     return {
                         sectionId: section._id,
                         title: section.title,
@@ -310,23 +330,27 @@
                         categories: categories.map(cat => ({
                             id: cat._id,
                             name: cat.name,
-                            imageUrl: cat.imageUrl || '/images/placeholder-category.jpg'
+                            imageUrl: (cat.imageUpload && cat.imageUpload.url) || cat.image || '/images/placeholder-category.jpg'
                         }))
                     };
-
                 case 'newArrivals':
-                    // New arrivals - fetch from products API
-                    const newArrivalsResponse = await fetch('/api/products?filter=new&limit=8');
-                    const newProducts = await newArrivalsResponse.json();
+                    // New Arrivals: use section-specific public endpoint (filters isNewArrival)
+                    const naResponse = await fetch(`/api/homepage-sections/${section._id}/data/public`);
+                    if (!naResponse.ok) {
+                        console.error('❌ Failed to fetch New Arrivals data:', naResponse.status);
+                        return null;
+                    }
+                    const naData = await naResponse.json();
+                    const productsArray = Array.isArray(naData?.products) ? naData.products : [];
                     return {
                         sectionId: section._id,
                         title: section.title,
                         subtitle: section.subtitle,
-                        products: newProducts.map(p => ({
+                        products: productsArray.map(p => ({
                             id: p._id,
                             name: p.name,
                             price: p.price,
-                            imageUrl: p.images && p.images[0] ? p.images[0] : '/images/placeholder-product.jpg'
+                            imageUrl: (p.imageUpload && p.imageUpload.url) || p.image || '/images/placeholder-product.jpg'
                         }))
                     };
 
@@ -342,36 +366,67 @@
                             id: p._id,
                             name: p.name,
                             price: p.price,
-                            imageUrl: p.images && p.images[0] ? p.images[0] : '/images/placeholder-product.jpg'
+                            imageUrl: (p.imageUpload && p.imageUpload.url) || p.image || '/images/placeholder-product.jpg'
                         }))
                     };
 
                 case 'featuredCollections':
-                    // Featured collections - fetch from products API
-                    const collectionsResponse = await fetch('/api/products?filter=featured&limit=6');
-                    const collections = await collectionsResponse.json();
+                    // Featured Collections: show active subcategories in circles
+                    // Fetch section-specific public data (subcategories)
+                    const fcResponse = await fetch(`/api/homepage-sections/${section._id}/data/public`);
+                    if (!fcResponse.ok) {
+                        console.error('❌ Failed to fetch Featured Collections data:', fcResponse.status);
+                        return null;
+                    }
+                    const fcData = await fcResponse.json();
+                    const subcats = Array.isArray(fcData?.subcategories) ? fcData.subcategories : [];
                     return {
                         sectionId: section._id,
                         title: section.title,
                         subtitle: section.subtitle,
-                        collections: collections.map(c => ({
-                            name: c.name,
-                            imageUrl: c.images && c.images[0] ? c.images[0] : '/images/placeholder-collection.jpg',
-                            linkUrl: `/product.html?id=${c._id}`
+                        showArrows: section.config?.showArrows !== false,
+                        collections: subcats.map(sc => ({
+                            name: sc.name,
+                            imageUrl: (sc.imageUpload && sc.imageUpload.url) || sc.image || '/images/placeholder-category.jpg',
+                            linkUrl: `/subcategory/${sc._id}`
                         }))
                     };
 
 
                 case 'newsletterSocial':
-                    // Newsletter & Social - data comes from config
-                    return {
-                        sectionId: section._id,
-                        title: section.title,
-                        subtitle: section.subtitle,
-                        backgroundColor: section.config.backgroundColor || '#c42525',
-                        textColor: section.config.textColor || '#ffffff',
-                        socialLinks: section.config.socialLinks || []
-                    };
+                    // Newsletter & Social - data comes from config (normalize shapes)
+                    {
+                        const cfg = section.config || {};
+                        const rawLinks = cfg.socialLinks;
+                        let socialLinks = [];
+                        if (Array.isArray(rawLinks)) {
+                            socialLinks = rawLinks;
+                        } else if (rawLinks && typeof rawLinks === 'object') {
+                            if (rawLinks.facebook) {
+                                socialLinks.push({ platform: 'Facebook', url: rawLinks.facebook, iconClass: 'fab fa-facebook-f' });
+                            }
+                            if (rawLinks.instagram) {
+                                socialLinks.push({ platform: 'Instagram', url: rawLinks.instagram, iconClass: 'fab fa-instagram' });
+                            }
+                        } else {
+                            socialLinks = [
+                                { platform: 'Facebook', url: '#', iconClass: 'fab fa-facebook-f' },
+                                { platform: 'Instagram', url: '#', iconClass: 'fab fa-instagram' }
+                            ];
+                        }
+                        return {
+                            sectionId: section._id,
+                            title: section.title,
+                            subtitle: section.subtitle,
+                            backgroundColor: cfg.backgroundColor || '#c42525',
+                            textColor: cfg.textColor || '#ffffff',
+                            socialLinks,
+                            leftTitle: cfg.leftTitle || cfg.socialTitle || "LET'S CONNECT ON SOCIAL MEDIA",
+                            leftText: cfg.leftText || cfg.socialDesc || 'Follow us to stay updated on latest looks.',
+                            rightTitle: cfg.rightTitle || cfg.newsletterTitle || 'SIGN UP FOR EXCLUSIVE OFFERS & DISCOUNTS',
+                            rightText: cfg.rightText || cfg.newsletterDesc || 'Stay updated on new deals and news.'
+                        };
+                    }
 
                 case 'brandSection':
                     // Brand Section - brands are stored directly in section config
@@ -708,23 +763,59 @@
             startAutoplay();
         });
 
-        // Product carousels
+        // Product carousels with auto-slide
         document.querySelectorAll('.product-carousel').forEach(carousel => {
             const container = carousel.querySelector('.product-carousel-container');
             const prevBtn = carousel.querySelector('.carousel-arrow.prev');
             const nextBtn = carousel.querySelector('.carousel-arrow.next');
+            let autoSlideInterval = null;
+            const autoSlideSpeed = 3000; // 3 seconds
+
+            function scrollNext() {
+                const scrollAmount = container.offsetWidth * 0.8;
+                const maxScroll = container.scrollWidth - container.offsetWidth;
+                
+                if (container.scrollLeft >= maxScroll - 10) {
+                    container.scrollTo({ left: 0, behavior: 'auto' });
+                } else {
+                    container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+                }
+            }
+
+            function startAutoSlide() {
+                stopAutoSlide();
+                if (container.scrollWidth > container.offsetWidth) {
+                    autoSlideInterval = setInterval(scrollNext, autoSlideSpeed);
+                }
+            }
+
+            function stopAutoSlide() {
+                if (autoSlideInterval) {
+                    clearInterval(autoSlideInterval);
+                    autoSlideInterval = null;
+                }
+            }
 
             if (prevBtn) {
                 prevBtn.addEventListener('click', () => {
+                    stopAutoSlide();
                     container.scrollBy({ left: -container.offsetWidth * 0.8, behavior: 'smooth' });
+                    startAutoSlide();
                 });
             }
 
             if (nextBtn) {
                 nextBtn.addEventListener('click', () => {
-                    container.scrollBy({ left: container.offsetWidth * 0.8, behavior: 'smooth' });
+                    stopAutoSlide();
+                    scrollNext();
+                    startAutoSlide();
                 });
             }
+
+            carousel.addEventListener('mouseenter', stopAutoSlide);
+            carousel.addEventListener('mouseleave', startAutoSlide);
+
+            startAutoSlide();
         });
     }
 
@@ -966,4 +1057,10 @@
     };
 
 })();
-
+                            // Apply newsletter colors from config to avoid inline templated styles
+                            if (section.type === 'newsletterSocial') {
+                                const bg = (section.config && section.config.backgroundColor) || '#c42525';
+                                const fg = (section.config && section.config.textColor) || '#ffffff';
+                                sectionElement.style.backgroundColor = bg;
+                                sectionElement.style.color = fg;
+                            }

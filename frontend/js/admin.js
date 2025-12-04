@@ -4797,6 +4797,14 @@ function loadHomepageSectionConfig(sectionType) {
                                     <label class="form-label">Social Description</label>
                                     <textarea class="form-control" id="configSocialDesc" rows="2" placeholder="Follow us to stay updated on latest looks."></textarea>
                                 </div>
+                                <div class="mb-3">
+                                    <label class="form-label"><i class="fab fa-facebook-f"></i> Facebook URL</label>
+                                    <input type="url" class="form-control" id="configFacebookUrl" placeholder="https://facebook.com/yourpage">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label"><i class="fab fa-instagram"></i> Instagram URL</label>
+                                    <input type="url" class="form-control" id="configInstagramUrl" placeholder="https://instagram.com/yourpage">
+                                </div>
                             </div>
                             <div class="col-md-6">
                                 <h6 class="mb-3">Newsletter Section (Right Side)</h6>
@@ -4809,11 +4817,6 @@ function loadHomepageSectionConfig(sectionType) {
                                     <textarea class="form-control" id="configNewsletterDesc" rows="2" placeholder="Stay updated on new deals and news."></textarea>
                                 </div>
                             </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Social Media Links (JSON format)</label>
-                            <textarea class="form-control" id="configSocialLinks" rows="4" placeholder='{"facebook": "https://facebook.com/page", "instagram": "https://instagram.com/page"}'></textarea>
-                            <div class="form-text">Enter Facebook and Instagram URLs. Example: {"facebook": "https://facebook.com/yourpage", "instagram": "https://instagram.com/yourpage"}</div>
                         </div>
                         <div class="mb-3 mt-3">
                             <label class="form-label fw-bold">Location <span class="text-danger">*</span></label>
@@ -6274,16 +6277,17 @@ function buildHomepageSectionConfig(sectionType) {
             config.socialDesc = $('#configSocialDesc').val() || '';
             config.newsletterTitle = $('#configNewsletterTitle').val() || '';
             config.newsletterDesc = $('#configNewsletterDesc').val() || '';
-            try {
-                const socialText = $('#configSocialLinks').val().trim();
-                if (socialText) {
-                    config.socialLinks = JSON.parse(socialText);
-                } else {
-                    config.socialLinks = {};
-                }
-            } catch (e) {
-                console.error('Error parsing social links JSON:', e);
-                config.socialLinks = {};
+            const fbUrl = ($('#configFacebookUrl').val() || '').trim();
+            const igUrl = ($('#configInstagramUrl').val() || '').trim();
+            const links = [];
+            if (fbUrl) {
+                links.push({ platform: 'Facebook', url: fbUrl, iconClass: 'fab fa-facebook-f' });
+            }
+            if (igUrl) {
+                links.push({ platform: 'Instagram', url: igUrl, iconClass: 'fab fa-instagram' });
+            }
+            if (links.length > 0) {
+                config.socialLinks = links;
             }
             // Location
             const newsletterSocialLocation = $('#configNewsletterSocialLocation').val() || 'bottom';
@@ -6610,7 +6614,15 @@ async function populateHomepageSectionConfig(sectionType, config) {
             if (config.newsletterTitle) $('#configNewsletterTitle').val(config.newsletterTitle);
             if (config.newsletterDesc) $('#configNewsletterDesc').val(config.newsletterDesc);
             if (config.socialLinks) {
-                $('#configSocialLinks').val(JSON.stringify(config.socialLinks, null, 2));
+                if (Array.isArray(config.socialLinks)) {
+                    const fb = config.socialLinks.find(l => (l.platform||'').toLowerCase()==='facebook');
+                    const ig = config.socialLinks.find(l => (l.platform||'').toLowerCase()==='instagram');
+                    if (fb && fb.url) $('#configFacebookUrl').val(fb.url);
+                    if (ig && ig.url) $('#configInstagramUrl').val(ig.url);
+                } else if (typeof config.socialLinks === 'object' && config.socialLinks !== null) {
+                    if (config.socialLinks.facebook) $('#configFacebookUrl').val(config.socialLinks.facebook);
+                    if (config.socialLinks.instagram) $('#configInstagramUrl').val(config.socialLinks.instagram);
+                }
             }
             // Load location dropdown and restore saved location
             const savedNewsletterSocialLocation = config.location || 'bottom';

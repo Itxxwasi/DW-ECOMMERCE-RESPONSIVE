@@ -1,13 +1,18 @@
-<!-- Announcement Bar Section -->
-<div class="announcement-bar" data-section-id="{{sectionId}}" style="background-color: {{backgroundColor}}; color: {{textColor}};">
-    <div class="announcement-bar-content" style="animation-duration: {{scrollSpeed}}s;">
-        {{#each items}}
-        <span class="announcement-bar-item">{{this}}</span>
-        {{/each}}
-        <!-- Duplicate for seamless loop -->
-        {{#each items}}
-        <span class="announcement-bar-item">{{this}}</span>
-        {{/each}}
+﻿<!-- Announcement Bar Section -->
+<div class="scrolling-text" data-section-id="{{sectionId}}" data-section-name="{{sectionName}}" style="background-color: {{backgroundColor}}; color: {{textColor}};">
+    <div class="scrolling-text__wrapper">
+        <div class="scrolling-text__inner" style="--scroll-speed: {{scrollSpeed}}s;">
+            <div class="scrolling-text__content">
+                {{#each items}}
+                <span class="scrolling-text__item">{{this}}</span>
+                {{#unless @last}}<span class="scrolling-text__icon"></span>{{/unless}}
+                {{/each}}
+                <!-- Duplicate for seamless loop -->
+                {{#each items}}
+                <span class="scrolling-text__item">{{this}}</span>
+                {{#unless @last}}<span class="scrolling-text__icon"></span>{{/unless}}
+                {{/each}}
+            </div>
+        </div>
     </div>
 </div>
-

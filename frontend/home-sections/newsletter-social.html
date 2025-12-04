@@ -1,17 +1,27 @@
 <!-- Newsletter & Social Section -->
-<section class="newsletter-social home-section" data-section-id="{{sectionId}}" style="background-color: {{backgroundColor}}; color: {{textColor}};">
-    {{#if title}}<h3>{{title}}</h3>{{/if}}
-    {{#if subtitle}}<p>{{subtitle}}</p>{{/if}}
-    <form class="newsletter-form" onsubmit="handleNewsletterSubmit(event)">
-        <input type="email" placeholder="Enter your email" required aria-label="Email address">
-        <button type="submit">Subscribe</button>
-    </form>
-    <div class="social-links">
-        {{#each socialLinks}}
-        <a href="{{url}}" target="_blank" rel="noopener noreferrer" aria-label="{{platform}}">
-            <i class="{{iconClass}}"></i>
-        </a>
-        {{/each}}
+<section class="newsletter-social home-section" data-section-id="{{sectionId}}">
+    <div class="newsletter-inner">
+        <div class="newsletter-container">
+            <div class="newsletter-column left">
+                <h3 class="newsletter-heading">{{leftTitle}}</h3>
+                <div class="social-links">
+                    {{#each socialLinks}}
+                    <a href="{{url}}" target="_blank" rel="noopener" aria-label="{{platform}}" class="social-link">
+                        <i class="{{iconClass}}"></i>
+                    </a>
+                    {{/each}}
+                </div>
+                <p class="newsletter-text">{{leftText}}</p>
+            </div>
+            <div class="newsletter-column right">
+                <h3 class="newsletter-heading">{{rightTitle}}</h3>
+                <form class="newsletter-form" onsubmit="handleNewsletterSubmit(event)">
+                    <input type="email" placeholder="Enter your email address" required aria-label="Email address">
+                    <button type="submit" class="newsletter-submit">Submit</button>
+                </form>
+                <p class="newsletter-text">{{rightText}}</p>
+            </div>
+        </div>
     </div>
 </section>
 
