@@ -2322,10 +2322,10 @@ async function loadCartCount() {
 }
 
 function updateCartCount(count) {
-    const cartCountEl = document.querySelector('.cart-count');
-    if (cartCountEl) {
-        cartCountEl.textContent = String(count || 0);
-    }
+    const els = document.querySelectorAll('.cart-count');
+    els.forEach(el => {
+        el.textContent = String(count || 0);
+    });
 }
 
 async function handleAddToCart(productId) {
@@ -2700,6 +2700,7 @@ async function loadFooterDepartments() {
 // Export functions to window for use in other scripts
 if (typeof window !== 'undefined') {
     window.handleAddToCart = handleAddToCart;
+    window.addToCart = handleAddToCart;
     window.addToGuestCart = addToGuestCart;
     window.loadCartCount = loadCartCount;
     window.getGuestCart = getGuestCart;

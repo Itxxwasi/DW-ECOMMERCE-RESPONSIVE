@@ -202,13 +202,13 @@ function renderProducts(products) {
         
         return `
             <div class="product-card">
-                <a href="/product.html?id=${productId}" style="position: relative; display: block;">
+                <a href="/product/${productId}" style="position: relative; display: block;">
                     <img src="${productImage}" alt="${product.name}" class="product-card-image">
                     ${product.discount > 0 ? `<span class="badge bg-danger" style="position: absolute; top: 8px; right: 8px; padding: 4px 8px;">-${product.discount}%</span>` : ''}
                 </a>
                 <div class="product-card-info">
                     <small class="text-muted d-block mb-1" style="font-size: 12px;">${categoryName}${departmentName ? ` • ${departmentName}` : ''}</small>
-                    <a href="/product.html?id=${productId}" style="text-decoration: none; color: inherit;">
+                    <a href="/product/${productId}" style="text-decoration: none; color: inherit;">
                         <h3 class="product-card-title">${product.name}</h3>
                     </a>
                     <div class="product-card-price">

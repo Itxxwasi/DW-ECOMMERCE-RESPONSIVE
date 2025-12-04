@@ -5,11 +5,11 @@
     <div class="product-grid">
         {{#each products}}
         <div class="product-card">
-            <a href="/product.html?id={{id}}">
+            <a href="/product/{{id}}">
                 <img src="{{imageUrl}}" alt="{{name}}" class="product-card-image" loading="lazy">
             </a>
             <div class="product-card-info">
-                <a href="/product.html?id={{id}}">
+                <a href="/product/{{id}}">
                     <h3 class="product-card-title">{{name}}</h3>
                 </a>
                 <div class="product-card-price">Rs {{price}}</div>
