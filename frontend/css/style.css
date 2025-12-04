@@ -139,7 +139,7 @@ a {
     will-change: transform;
 }
 
-.hero-slide {
+.hero-carousel .hero-slide {
     flex: 0 0 100%;
     width: 100%;
     min-width: 100%;
@@ -154,7 +154,7 @@ a {
     flex-shrink: 0;
 }
 
-.hero-slide::after {
+.hero-carousel .hero-slide::after {
     content: '';
     position: absolute;
     inset: 0;
@@ -162,7 +162,7 @@ a {
     pointer-events: none;
 }
 
-.hero-slide__overlay {
+.hero-carousel .hero-slide__overlay {
     position: relative;
     margin-left: 7%;
     padding: 36px 42px;
@@ -174,20 +174,20 @@ a {
     z-index: 1;
 }
 
-.hero-slide__overlay h1 {
+.hero-carousel .hero-slide__overlay h1 {
     font-size: 36px;
     font-weight: 700;
     line-height: 1.25;
     margin-bottom: 16px;
 }
 
-.hero-slide__overlay p {
+.hero-carousel .hero-slide__overlay p {
     font-size: 16px;
     color: var(--muted-color);
     margin-bottom: 22px;
 }
 
-.hero-tagline {
+.hero-carousel .hero-tagline {
     text-transform: uppercase;
     letter-spacing: 4px;
     font-size: 12px;
@@ -253,35 +253,35 @@ a {
 }
 
 @media (max-width: 1199px) {
-    .hero-slide {
+    .hero-carousel .hero-slide {
         height: 78vh;
         min-height: 520px;
     }
 
-    .hero-slide__overlay {
+    .hero-carousel .hero-slide__overlay {
         margin-left: 6%;
         padding: 32px 38px;
         max-width: 380px;
     }
 
-    .hero-slide__overlay h1 {
+    .hero-carousel .hero-slide__overlay h1 {
         font-size: 30px;
     }
 }
 
 @media (max-width: 991px) {
-    .hero-slide {
+    .hero-carousel .hero-slide {
         height: auto;
         min-height: 480px;
         padding: 80px 32px 120px;
         justify-content: center;
     }
 
-    .hero-slide::after {
+    .hero-carousel .hero-slide::after {
         background: rgba(25, 121, 195, 0.45);
     }
 
-    .hero-slide__overlay {
+    .hero-carousel .hero-slide__overlay {
         margin: 0;
         padding: 28px 32px;
         max-width: 520px;
@@ -290,12 +290,12 @@ a {
 }
 
 @media (max-width: 767px) {
-    .hero-slide {
+    .hero-carousel .hero-slide {
         padding: 70px 20px 100px;
         min-height: 420px;
     }
 
-    .hero-slide__overlay {
+    .hero-carousel .hero-slide__overlay {
         padding: 24px;
     }
 
@@ -305,11 +305,11 @@ a {
 }
 
 @media (max-width: 575px) {
-    .hero-slide {
+    .hero-carousel .hero-slide {
         min-height: 380px;
     }
 
-    .hero-slide__overlay h1 {
+    .hero-carousel .hero-slide__overlay h1 {
         font-size: 26px;
     }
 }
