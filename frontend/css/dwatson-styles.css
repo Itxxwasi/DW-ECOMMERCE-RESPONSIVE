@@ -7536,3 +7536,117 @@ body.mobile-menu-open {
     }
 }
 
+/* ============ Mobile Bottom Navigation Bar ============ */
+.mobile-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    background-color: #ffffff;
+    border-top: 1px solid #e5e5e5;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    padding: 8px 0;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: #666666;
+    font-size: 12px;
+    padding: 4px 8px;
+    position: relative;
+    transition: color 0.3s ease;
+    flex: 1;
+    max-width: 80px;
+}
+
+.mobile-nav-item i {
+    font-size: 20px;
+    margin-bottom: 4px;
+    display: block;
+}
+
+.mobile-nav-label {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: capitalize;
+    line-height: 1.2;
+}
+
+.mobile-nav-item:hover,
+.mobile-nav-item.active {
+    color: #c42525;
+}
+
+.mobile-nav-item:hover i,
+.mobile-nav-item.active i {
+    color: #c42525;
+}
+
+.mobile-nav-badge {
+    position: absolute;
+    top: 0;
+    right: 8px;
+    background-color: #c42525;
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    min-width: 18px;
+}
+
+.mobile-nav-badge:empty {
+    display: none;
+}
+
+/* Hide mobile bottom nav on desktop */
+@media (min-width: 992px) {
+    .mobile-bottom-nav {
+        display: none !important;
+    }
+}
+
+/* Show mobile bottom nav and hide header-control on mobile */
+@media (max-width: 991px) {
+    /* Show mobile bottom nav */
+    .mobile-bottom-nav {
+        display: flex !important;
+    }
+    
+    /* Hide header-control items on mobile */
+    .header-control .item-list.signin,
+    .header-control .item-list.cart-block,
+    .header-control .item-list.header_search {
+        display: none !important;
+    }
+    
+    /* Hide entire header-control on mobile if needed */
+    .header-control {
+        display: none !important;
+    }
+    
+    /* Adjust WhatsApp button position to account for bottom nav */
+    .whatsapp-chat {
+        bottom: 80px !important;
+    }
+    
+    /* Add padding to body on mobile to prevent content from being hidden behind bottom nav */
+    body {
+        padding-bottom: 70px !important;
+    }
+}
+

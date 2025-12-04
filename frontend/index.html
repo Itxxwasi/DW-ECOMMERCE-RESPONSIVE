@@ -87,8 +87,8 @@
     
     <!-- Main Stylesheets - Load critical CSS first, defer non-critical -->
     <link rel="stylesheet" href="/css/style.css?v=2">
-    <link rel="stylesheet" href="/css/dwatson-styles.css?v=2">
-    <link rel="stylesheet" href="/css/home.css?v=4">
+    <link rel="stylesheet" href="/css/dwatson-styles.css?v=5">
+    <link rel="stylesheet" href="/css/home.css?v=10">
     <!-- Defer non-critical CSS -->
     <link rel="preload" href="/css/professional-navbar.css?v=1" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="/css/professional-navbar.css?v=1"></noscript>
@@ -216,7 +216,7 @@
                                 </li>
                                 <!-- Mobile Search Icon -->
                                 <li class="header_search hide-desktop">
-                                    <a href="/search" class="header-search push_side header-icon" data-id="#search_pupop" title="Search">
+                                    <a href="#" class="mobile-nav-item push_side" data-id="#search_pupop" data-page="search" class="header-search push_side header-icon" data-id="#search_pupop" title="Search">
                                         <span class="icon"><i class="icon-search"></i></span>
                                     </a>
                                 </li>
@@ -421,6 +421,31 @@
             }, 1500);
         }
     </script>
+    
+    <!-- Mobile Bottom Navigation Bar -->
+    <nav class="mobile-bottom-nav">
+        <a href="/" class="mobile-nav-item" data-page="home">
+            <i class="fas fa-home"></i>
+            <span class="mobile-nav-label">Home</span>
+        </a>
+        <a href="/products.html" class="mobile-nav-item" data-page="shop">
+            <i class="fas fa-th-large"></i>
+            <span class="mobile-nav-label">Shop</span>
+        </a>
+        <a href="/cart.html" class="mobile-nav-item" data-page="cart">
+            <i class="fas fa-shopping-bag"></i>
+            <span class="mobile-nav-label">Cart</span>
+            <span class="mobile-nav-badge cart-count">0</span>
+        </a>
+        <a href="#" class="mobile-nav-item push_side" data-id="#search_pupop" data-page="search">
+            <i class="fas fa-search"></i>
+            <span class="mobile-nav-label">Search</span>
+        </a>
+        <a href="/login.html" class="mobile-nav-item" data-page="account">
+            <i class="far fa-user"></i>
+            <span class="mobile-nav-label">Account</span>
+        </a>
+    </nav>
     
     <!-- Optimized JavaScript Loading -->
     <!-- jQuery - Load with defer for non-blocking -->

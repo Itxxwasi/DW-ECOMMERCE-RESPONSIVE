@@ -32,6 +32,13 @@
     padding-bottom: 0 !important;
 }
 
+/* Reduce spacing between banner and brand section */
+.banner-section + .brand-section-wrapper,
+.banner-section + .home-section.brand-section-wrapper {
+    margin-top: 0 !important;
+    padding-top: 10px !important;
+}
+
 .section-title {
     font-family: "Montserrat", sans-serif;
     font-weight: 600;
@@ -404,9 +411,10 @@
 
 .brand-section-wrapper {
     width: 100%;
-    padding: 30px 15px;
-    background: #ffffff;
+    padding: 15px 15px 30px 15px;
+    background: #f5f5f5;
     position: relative;
+    margin-top: 0;
 }
 
 .brand-section-container {
@@ -480,16 +488,16 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 30px 20px;
+    padding: 15px 10px;
     min-height: 120px;
     flex: 1;
 }
 
 .brand-logo-img {
-    max-width: 90%;
-    max-height: 70px;
-    width: auto;
-    height: auto;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
     object-fit: contain;
     display: block;
 }
@@ -526,7 +534,12 @@
 /* Tablet */
 @media (min-width: 768px) {
     .brand-section-wrapper {
-        padding: 40px 25px;
+        padding: 20px 25px 40px 25px;
+    }
+    
+    .banner-section + .brand-section-wrapper,
+    .banner-section + .home-section.brand-section-wrapper {
+        padding-top: 15px !important;
     }
 
     .brand-section-header {
@@ -548,12 +561,15 @@
     }
 
     .brand-logo-area {
-        padding: 30px 20px;
+        padding: 20px 15px;
         min-height: 160px;
     }
 
     .brand-logo-img {
-        max-height: 80px;
+        width: 100%;
+        height: 100%;
+        max-width: 100%;
+        max-height: 100%;
     }
 
     .brand-discount-banner {
@@ -565,7 +581,12 @@
 /* Desktop */
 @media (min-width: 992px) {
     .brand-section-wrapper {
-        padding: 60px 40px;
+        padding: 25px 40px 60px 40px;
+    }
+    
+    .banner-section + .brand-section-wrapper,
+    .banner-section + .home-section.brand-section-wrapper {
+        padding-top: 20px !important;
     }
 
     .brand-section-header {
@@ -587,12 +608,15 @@
     }
 
     .brand-logo-area {
-        padding: 35px 25px;
+        padding: 25px 20px;
         min-height: 180px;
     }
 
     .brand-logo-img {
-        max-height: 90px;
+        width: 100%;
+        height: 100%;
+        max-width: 100%;
+        max-height: 100%;
     }
 
     .brand-discount-banner {
@@ -609,7 +633,12 @@
 /* Large Desktop */
 @media (min-width: 1200px) {
     .brand-section-wrapper {
-        padding: 80px 50px;
+        padding: 30px 50px 80px 50px;
+    }
+    
+    .banner-section + .brand-section-wrapper,
+    .banner-section + .home-section.brand-section-wrapper {
+        padding-top: 25px !important;
     }
 
     .brand-grid {
@@ -618,11 +647,14 @@
 
     .brand-logo-area {
         min-height: 180px;
-        padding: 35px 25px;
+        padding: 25px 20px;
     }
 
     .brand-logo-img {
-        max-height: 90px;
+        width: 100%;
+        height: 100%;
+        max-width: 100%;
+        max-height: 100%;
     }
 
     .brand-discount-banner {
