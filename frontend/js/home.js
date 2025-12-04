@@ -8,7 +8,7 @@
     
     // CRITICAL: Log immediately to verify script loads
     console.log('🚀 home.js STARTING - Script is loading!');
-    console.log('🚀 home.js version: v21');
+    console.log('🚀 home.js version: v22');
     console.log('🚀 home.js timestamp:', new Date().toISOString());
 
     // Section type to template mapping
@@ -23,8 +23,17 @@
         'topSelling': 'top-selling-products.html',
         'featuredCollections': 'featured-collections.html',
         'brandSection': 'brand-section.html',
-        'newsletterSocial': 'newsletter-social.html'
+        'newsletterSocial': 'newsletter-social.html',
+        'videoBanner': 'video-banner.html'
     };
+    
+    // Verify videoBanner is in templates (after initialization)
+    console.log('✅ SECTION_TEMPLATES initialized with', Object.keys(SECTION_TEMPLATES).length, 'templates');
+    console.log('✅ videoBanner template:', SECTION_TEMPLATES['videoBanner']);
+    console.log('📋 Available section templates:', Object.keys(SECTION_TEMPLATES));
+    if (!SECTION_TEMPLATES['videoBanner']) {
+        console.error('❌ CRITICAL: videoBanner template missing from SECTION_TEMPLATES!');
+    }
 
     // Cache for templates
     const templateCache = {};
@@ -393,6 +402,108 @@
                     };
 
 
+                case 'videoBanner':
+                    // Video Banner - load data directly from section config (saved in database)
+                    {
+                        const cfg = section.config || {};
+                        
+                        console.log('🎥 Video Banner Section Config:', {
+                            sectionName: section.name,
+                            sectionId: section._id,
+                            config: cfg,
+                            hasVideoUrl: !!cfg.videoUrl,
+                            hasPosterImage: !!cfg.posterImage,
+                            isActive: section.isActive,
+                            isPublished: section.isPublished
+                        });
+                        
+                        // Get video URL from config (saved from upload or direct URL)
+                        const videoUrl = cfg.videoUrl || '';
+                        const posterImage = cfg.posterImage || '';
+                        
+                        // If no video URL and no poster image, show warning but still render (with overlay if exists)
+                        if (!videoUrl && !posterImage) {
+                            console.warn('⚠️ Video Banner section has no video URL or poster image. Section will still render but may be empty.');
+                        }
+                        
+                        // Get video type from config
+                        const videoType = cfg.videoType || 'direct';
+                        
+                        // Extract video type and prepare embed URLs
+                        let youtubeEmbedUrl = '';
+                        let vimeoEmbedUrl = '';
+                        let isYouTube = false;
+                        let isVimeo = false;
+                        let isDirectVideo = false;
+                        let showPosterOnly = false;
+                        
+                        if (videoUrl) {
+                            if (videoType === 'youtube' || videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
+                                isYouTube = true;
+                                // Extract YouTube ID
+                                const youtubeIdMatch = videoUrl.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+                                const youtubeId = youtubeIdMatch ? youtubeIdMatch[1] : '';
+                                if (youtubeId) {
+                                    youtubeEmbedUrl = `https://www.youtube.com/embed/${youtubeId}`;
+                                } else {
+                                    console.warn('⚠️ Could not extract YouTube ID from URL:', videoUrl);
+                                }
+                            } else if (videoType === 'vimeo' || videoUrl.includes('vimeo.com')) {
+                                isVimeo = true;
+                                // Extract Vimeo ID
+                                const vimeoIdMatch = videoUrl.match(/(?:vimeo\.com\/)(\d+)/);
+                                const vimeoId = vimeoIdMatch ? vimeoIdMatch[1] : '';
+                                if (vimeoId) {
+                                    vimeoEmbedUrl = `https://player.vimeo.com/video/${vimeoId}`;
+                                } else {
+                                    console.warn('⚠️ Could not extract Vimeo ID from URL:', videoUrl);
+                                }
+                            } else {
+                                isDirectVideo = true;
+                            }
+                        } else if (posterImage) {
+                            // If no video URL but poster image exists, show poster only
+                            showPosterOnly = true;
+                        }
+                        
+                        // Get overlay content from config
+                        const title = cfg.overlayText || section.title || '';
+                        const description = cfg.overlayDescription || section.subtitle || '';
+                        const ctaText = cfg.ctaText || '';
+                        const ctaLink = cfg.ctaLink || '#';
+                        
+                        // Get video settings from config (defaults if not set)
+                        const autoplay = cfg.autoplay !== false ? 1 : 0;
+                        const loop = cfg.loop !== false ? 1 : 0;
+                        const muted = cfg.muted !== false ? 1 : 0;
+                        const controls = cfg.controls === true ? 1 : 0;
+                        
+                        const videoData = {
+                            sectionId: section._id,
+                            videoUrl: videoUrl,
+                            videoType: videoType,
+                            isYouTube: isYouTube,
+                            isVimeo: isVimeo,
+                            isDirectVideo: isDirectVideo,
+                            showPosterOnly: showPosterOnly,
+                            youtubeEmbedUrl: youtubeEmbedUrl,
+                            vimeoEmbedUrl: vimeoEmbedUrl,
+                            posterImage: posterImage,
+                            title: title,
+                            description: description,
+                            ctaText: ctaText,
+                            ctaLink: ctaLink,
+                            hasOverlay: !!(title || description || ctaText),
+                            autoplay: autoplay,
+                            loop: loop,
+                            muted: muted,
+                            controls: controls
+                        };
+                        
+                        console.log('✅ Video Banner Data Prepared:', videoData);
+                        return videoData;
+                    }
+
                 case 'newsletterSocial':
                     // Newsletter & Social - data comes from config (normalize shapes)
                     {
@@ -526,16 +637,28 @@
             mappingValue: SECTION_TEMPLATES[section.type]
         });
         
+        // Debug: Log section type lookup
+        console.log(`🔍 Template lookup for section type: "${section.type}"`, {
+            sectionName: section.name,
+            sectionType: section.type,
+            typeInTemplates: section.type in SECTION_TEMPLATES,
+            templateValue: SECTION_TEMPLATES[section.type],
+            allTemplates: Object.keys(SECTION_TEMPLATES)
+        });
+        
         const templateName = SECTION_TEMPLATES[section.type];
         if (!templateName) {
-            console.warn(`⚠️ No template found for section type: "${section.type}"`, {
+            console.error(`❌ No template found for section type: "${section.type}"`, {
                 availableTypes: Object.keys(SECTION_TEMPLATES),
                 sectionType: section.type,
                 sectionTypeValue: JSON.stringify(section.type),
-                sectionTypeCharCodes: section.type ? Array.from(section.type).map(c => c.charCodeAt(0)) : []
+                sectionTypeCharCodes: section.type ? Array.from(section.type).map(c => c.charCodeAt(0)) : [],
+                templatesObject: SECTION_TEMPLATES
             });
             return null;
         }
+        
+        console.log(`✅ Template found: ${templateName} for section type: ${section.type}`);
         
         // Special logging for banner sections
         if (section.type === 'bannerFullWidth') {
@@ -551,6 +674,18 @@
                 templateName: templateName,
                 config: section.config,
                 brandsCount: section.config?.brands?.length || 0
+            });
+        }
+
+        // Special logging for video banner sections
+        if (section.type === 'videoBanner') {
+            console.log(`🎥 VIDEO BANNER: About to render ${section.name}`, {
+                templateName: templateName,
+                config: section.config,
+                hasVideoUrl: !!section.config?.videoUrl,
+                hasPosterImage: !!section.config?.posterImage,
+                isActive: section.isActive,
+                isPublished: section.isPublished
             });
         }
 
@@ -591,7 +726,13 @@
     function sortSectionsByLocation(sections) {
         const sorted = [];
         const processed = new Set();
-        const sectionMap = new Map(); // Map section IDs to their index in sorted array
+        const sectionMap = new Map(); // Map normalized section IDs to their index in sorted array
+        
+        // Helper function to normalize IDs for comparison (handle both string and ObjectId)
+        const normalizeId = (id) => {
+            if (!id) return null;
+            return String(id);
+        };
 
         // First, add sections with location 'top'
         sections.forEach(section => {
@@ -599,20 +740,40 @@
             if (location === 'top') {
                 sorted.push(section);
                 processed.add(section._id);
-                sectionMap.set(section._id, sorted.length - 1);
+                const normalizedId = normalizeId(section._id);
+                if (normalizedId) {
+                    sectionMap.set(normalizedId, sorted.length - 1);
+                }
             }
         });
 
         // Add sections without location BEFORE processing "after-section" references
         // This ensures sections that are referenced by others are available
+        // BUT: We should NOT add sections with 'after-section-*' locations here
+        // IMPORTANT: Add sections that might be targets FIRST (those without location or with 'bottom')
         sections.forEach(section => {
             if (processed.has(section._id)) return;
             const location = section.config && section.config.location;
-            // If no location specified, add it now (it might be referenced by other sections)
-            if (!location || location === '') {
+            // If no location specified OR location is 'bottom', add it now
+            // This ensures sections that are targets for other sections are available
+            // Skip sections with 'after-section-*' - those will be processed in next step
+            if (!location || location === '' || location === 'bottom') {
+                // Double-check it's not an 'after-section-*' location
+                if (location && location.startsWith('after-section-')) {
+                    // Skip - will be processed in next step
+                    console.log(`⏳ Deferring section "${section.name}" (${section.type}) with location: ${location}`);
+                    return;
+                }
                 sorted.push(section);
                 processed.add(section._id);
-                sectionMap.set(section._id, sorted.length - 1);
+                const normalizedId = normalizeId(section._id);
+                if (normalizedId) {
+                    sectionMap.set(normalizedId, sorted.length - 1);
+                }
+                console.log(`📍 Added section "${section.name}" (${section.type}) with location: ${location || 'none'}`);
+            } else if (location && location.startsWith('after-section-')) {
+                // Skip - will be processed in next step
+                console.log(`⏳ Deferring section "${section.name}" (${section.type}) with location: ${location}`);
             }
         });
 
@@ -620,6 +781,15 @@
         let changed = true;
         let iterations = 0;
         const maxIterations = sections.length * 3; // Increased iterations for complex dependencies
+        
+        // Build a map of normalized IDs to sections for easier lookup
+        const idToSectionMap = new Map();
+        sections.forEach(section => {
+            const normalizedId = normalizeId(section._id);
+            if (normalizedId) {
+                idToSectionMap.set(normalizedId, section);
+            }
+        });
         
         while (changed && iterations < maxIterations) {
             changed = false;
@@ -631,39 +801,75 @@
                 const location = section.config && section.config.location;
                 if (location && location.startsWith('after-section-')) {
                     const targetId = location.replace('after-section-', '');
-                    const targetIndex = sectionMap.get(targetId);
+                    const normalizedTargetId = normalizeId(targetId);
                     
-                    if (targetIndex !== undefined && targetIndex !== -1) {
+                    // Try to find target by normalized ID
+                    let targetIndex = -1;
+                    for (let i = 0; i < sorted.length; i++) {
+                        const normalizedId = normalizeId(sorted[i]._id);
+                        if (normalizedId === normalizedTargetId) {
+                            targetIndex = i;
+                            break;
+                        }
+                    }
+                    
+                    if (targetIndex !== -1) {
                         // Insert after the target section
+                        const targetSectionName = sorted[targetIndex].name;
                         sorted.splice(targetIndex + 1, 0, section);
                         processed.add(section._id);
                         
                         // Update all indices in the map
                         sectionMap.clear();
                         sorted.forEach((s, idx) => {
-                            sectionMap.set(s._id, idx);
+                            const normalizedId = normalizeId(s._id);
+                            if (normalizedId) {
+                                sectionMap.set(normalizedId, idx);
+                            }
                         });
                         
                         changed = true;
+                        console.log(`✅ Inserted "${section.name}" (${section.type}) after "${targetSectionName}" at index ${targetIndex + 1}`);
                     } else {
                         // Target not found yet - will try again in next iteration
-                        console.warn(`⚠️ Target section not found for "${section.name}": ${targetId}`);
+                        const targetSection = idToSectionMap.get(normalizedTargetId);
+                        if (targetSection) {
+                            console.warn(`⚠️ Target section "${targetSection.name}" (${normalizedTargetId}) exists but not yet processed. Will retry.`);
+                        } else {
+                            console.warn(`⚠️ Target section not found for "${section.name}": ${normalizedTargetId} (location: ${location})`);
+                        }
                     }
                 }
             });
         }
 
-        // Add remaining sections (with 'bottom' location) at the end
+        // Add remaining sections (with 'bottom' location or unprocessed) at the end
+        // Note: Sections that are targets should have been added in the previous step
         sections.forEach(section => {
             if (!processed.has(section._id)) {
                 const location = section.config && section.config.location;
-                // If location is explicitly 'bottom', add at end
+                // If location is explicitly 'bottom' AND it's not a target, add at end
                 if (location === 'bottom') {
+                    sorted.push(section);
+                    processed.add(section._id);
+                    console.log(`📍 Added section "${section.name}" (${section.type}) at bottom (final step)`);
+                } else if (location && location.startsWith('after-section-')) {
+                    // This section couldn't find its target after all iterations
+                    const targetId = location.replace('after-section-', '');
+                    const normalizedTargetId = normalizeId(targetId);
+                    
+                    // Check if target exists in the sections array
+                    const targetExists = sections.some(s => normalizeId(s._id) === normalizedTargetId);
+                    if (targetExists) {
+                        console.error(`❌ Section "${section.name}" (${section.type}) could not find target section with ID: ${normalizedTargetId} in sorted array. Target exists but wasn't processed correctly. Adding at end.`);
+                    } else {
+                        console.error(`❌ Section "${section.name}" (${section.type}) could not find target section with ID: ${normalizedTargetId}. Target section does not exist. Adding at end.`);
+                    }
                     sorted.push(section);
                     processed.add(section._id);
                 } else {
                     // This shouldn't happen, but log it for debugging
-                    console.warn(`⚠️ Section "${section.name}" not processed. Location: ${location || 'none'}`);
+                    console.warn(`⚠️ Section "${section.name}" (${section.type}) not processed. Location: ${location || 'none'}. Adding at end.`);
                     // Add it anyway to prevent losing sections
                     sorted.push(section);
                     processed.add(section._id);
@@ -675,8 +881,19 @@
             name: s.name,
             type: s.type,
             location: s.config?.location || 'none',
-            id: s._id
+            id: normalizeId(s._id)
         })));
+        
+        // Log any sections that weren't processed
+        const unprocessed = sections.filter(s => !processed.has(s._id));
+        if (unprocessed.length > 0) {
+            console.warn('⚠️ Unprocessed sections:', unprocessed.map(s => ({
+                name: s.name,
+                type: s.type,
+                location: s.config?.location || 'none',
+                id: normalizeId(s._id)
+            })));
+        }
 
         return sorted;
     }
@@ -865,8 +1082,48 @@
             }
             
             // Sort sections by location
+            console.log('🔍 Before sorting - All active sections:', activeSections.map(s => ({ 
+                name: s.name, 
+                type: s.type, 
+                location: s.config?.location || 'none',
+                id: String(s._id),
+                hasConfig: !!s.config
+            })));
+            
+            // Specifically check video banner location
+            const videoBannerSection = activeSections.find(s => s.type === 'videoBanner');
+            if (videoBannerSection) {
+                console.log('🎥 Video Banner Section Details:', {
+                    name: videoBannerSection.name,
+                    id: String(videoBannerSection._id),
+                    location: videoBannerSection.config?.location || 'none',
+                    fullConfig: videoBannerSection.config
+                });
+                
+                // Check if target section exists
+                if (videoBannerSection.config?.location && videoBannerSection.config.location.startsWith('after-section-')) {
+                    const targetId = videoBannerSection.config.location.replace('after-section-', '');
+                    const targetSection = activeSections.find(s => String(s._id) === targetId);
+                    if (targetSection) {
+                        console.log('✅ Target section found:', {
+                            name: targetSection.name,
+                            type: targetSection.type,
+                            id: String(targetSection._id)
+                        });
+                    } else {
+                        console.error('❌ Target section NOT found for video banner. Looking for ID:', targetId);
+                        console.log('Available section IDs:', activeSections.map(s => ({ name: s.name, id: String(s._id) })));
+                    }
+                }
+            }
+            
             const sortedSections = sortSectionsByLocation(activeSections);
-            console.log('📐 Sorted sections by location:', sortedSections.map(s => ({ name: s.name, type: s.type, location: s.config?.location })));
+            console.log('📐 After sorting - Sorted sections:', sortedSections.map(s => ({ 
+                name: s.name, 
+                type: s.type, 
+                location: s.config?.location || 'none',
+                id: String(s._id)
+            })));
 
             // Render each section
             let renderedCount = 0;
@@ -885,6 +1142,18 @@
                         config: section.config,
                         imageUrl: section.config?.imageUrl,
                         hasImageUrl: !!section.config?.imageUrl
+                    });
+                }
+                
+                // Special logging for video banner sections
+                if (section.type === 'videoBanner') {
+                    console.log(`🎥 VIDEO BANNER SECTION DETECTED: ${section.name}`, {
+                        config: section.config,
+                        videoUrl: section.config?.videoUrl,
+                        hasVideoUrl: !!section.config?.videoUrl,
+                        hasPosterImage: !!section.config?.posterImage,
+                        videoType: section.config?.videoType,
+                        location: section.config?.location
                     });
                 }
                 
@@ -992,6 +1261,14 @@
                                 }
                             }
                             
+                            // Apply newsletter colors from config to avoid inline templated styles
+                            if (section.type === 'newsletterSocial') {
+                                const bg = (section.config && section.config.backgroundColor) || '#c42525';
+                                const fg = (section.config && section.config.textColor) || '#ffffff';
+                                sectionElement.style.backgroundColor = bg;
+                                sectionElement.style.color = fg;
+                            }
+                            
                             container.appendChild(sectionElement);
                             renderedCount++;
                             console.log(`✅ Successfully rendered section: ${section.name}`);
@@ -1057,10 +1334,3 @@
     };
 
 })();
-                            // Apply newsletter colors from config to avoid inline templated styles
-                            if (section.type === 'newsletterSocial') {
-                                const bg = (section.config && section.config.backgroundColor) || '#c42525';
-                                const fg = (section.config && section.config.textColor) || '#ffffff';
-                                sectionElement.style.backgroundColor = bg;
-                                sectionElement.style.color = fg;
-                            }

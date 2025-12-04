@@ -1,0 +1,75 @@
+<!-- Video Banner Section - Mobile First Responsive -->
+<section class="video-banner-section home-section" data-section-id="{{sectionId}}">
+    <div class="video-banner-container">
+        <div class="video-banner-wrapper">
+            {{#if isYouTube}}
+                <!-- YouTube Video -->
+                <div class="video-embed-wrapper">
+                    <iframe 
+                        src="{{youtubeEmbedUrl}}?autoplay={{autoplay}}&mute={{muted}}&loop={{loop}}&controls={{controls}}&playsinline=1"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen
+                        loading="lazy"
+                        class="video-embed">
+                    </iframe>
+                </div>
+            {{/if}}
+            {{#if isVimeo}}
+                <!-- Vimeo Video -->
+                <div class="video-embed-wrapper">
+                    <iframe 
+                        src="{{vimeoEmbedUrl}}?autoplay={{autoplay}}&muted={{muted}}&loop={{loop}}&controls={{controls}}"
+                        frameborder="0"
+                        allow="autoplay; fullscreen; picture-in-picture"
+                        allowfullscreen
+                        loading="lazy"
+                        class="video-embed">
+                    </iframe>
+                </div>
+            {{/if}}
+            {{#if isDirectVideo}}
+                <!-- Direct Video File -->
+                <div class="video-file-wrapper">
+                    <video 
+                        class="video-file"
+                        {{#if autoplay}}autoplay{{/if}}
+                        {{#if loop}}loop{{/if}}
+                        {{#if muted}}muted{{/if}}
+                        {{#if controls}}controls{{/if}}
+                        {{#if posterImage}}poster="{{posterImage}}"{{/if}}
+                        playsinline>
+                        <source src="{{videoUrl}}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+            {{/if}}
+            {{#if showPosterOnly}}
+                <!-- Fallback: Show poster image if no video URL -->
+                {{#if posterImage}}
+                    <div class="video-poster-fallback">
+                        <img src="{{posterImage}}" alt="{{title}}" loading="lazy" class="poster-image">
+                    </div>
+                {{/if}}
+            {{/if}}
+            
+            <!-- Overlay Content (if title, description, or CTA exists) -->
+            {{#if hasOverlay}}
+                <div class="video-overlay">
+                    <div class="video-overlay-content">
+                        {{#if title}}
+                            <h2 class="video-overlay-title">{{title}}</h2>
+                        {{/if}}
+                        {{#if description}}
+                            <p class="video-overlay-description">{{description}}</p>
+                        {{/if}}
+                        {{#if ctaText}}
+                            <a href="{{ctaLink}}" class="video-cta-button">{{ctaText}}</a>
+                        {{/if}}
+                    </div>
+                </div>
+            {{/if}}
+        </div>
+    </div>
+</section>
+

@@ -18,13 +18,30 @@ const STATIC_ASSETS = [
     '/images/logo.png'
 ];
 
+// Helper function to check if a URL is cacheable
+function isCacheableUrl(url) {
+    // Only cache http:// and https:// URLs
+    // Skip chrome-extension://, file://, data:, blob:, etc.
+    const scheme = url.protocol;
+    return scheme === 'http:' || scheme === 'https:';
+}
+
 // Install event - Cache static assets
 self.addEventListener('install', (event) => {
     console.log('[SW] Installing service worker...');
     event.waitUntil(
         caches.open(STATIC_CACHE_NAME).then((cache) => {
             console.log('[SW] Caching static assets');
-            return cache.addAll(STATIC_ASSETS.map(url => new Request(url, { cache: 'reload' })));
+            // Filter out non-cacheable URLs and cache only valid ones
+            const cacheableAssets = STATIC_ASSETS.filter(url => {
+                try {
+                    const urlObj = new URL(url, self.location.origin);
+                    return isCacheableUrl(urlObj);
+                } catch {
+                    return false;
+                }
+            });
+            return cache.addAll(cacheableAssets.map(url => new Request(url, { cache: 'reload' })));
         }).catch(err => {
             console.error('[SW] Failed to cache static assets:', err);
         })
@@ -62,6 +79,11 @@ self.addEventListener('fetch', (event) => {
         return;
     }
     
+    // Skip non-cacheable URL schemes (chrome-extension, file, data, blob, etc.)
+    if (!isCacheableUrl(url)) {
+        return;
+    }
+    
     // Skip admin routes
     if (url.pathname.startsWith('/admin')) {
         return;
@@ -72,10 +94,12 @@ self.addEventListener('fetch', (event) => {
         event.respondWith(
             caches.open(API_CACHE_NAME).then((cache) => {
                 return fetch(request).then((response) => {
-                    // Cache successful API responses
-                    if (response.status === 200) {
+                    // Cache successful API responses (only if URL is cacheable)
+                    if (response.status === 200 && isCacheableUrl(url)) {
                         const responseClone = response.clone();
-                        cache.put(request, responseClone);
+                        cache.put(request, responseClone).catch((err) => {
+                            console.warn('[SW] Failed to cache API response:', request.url, err);
+                        });
                     }
                     return response;
                 }).catch(() => {
@@ -111,10 +135,15 @@ self.addEventListener('fetch', (event) => {
                     if (!response || response.status !== 200) {
                         return response;
                     }
-                    const responseToCache = response.clone();
-                    caches.open(STATIC_CACHE_NAME).then((cache) => {
-                        cache.put(request, responseToCache);
-                    });
+                    // Only cache if URL is cacheable
+                    if (isCacheableUrl(url)) {
+                        const responseToCache = response.clone();
+                        caches.open(STATIC_CACHE_NAME).then((cache) => {
+                            cache.put(request, responseToCache).catch((err) => {
+                                console.warn('[SW] Failed to cache resource:', request.url, err);
+                            });
+                        });
+                    }
                     return response;
                 });
             })
@@ -126,10 +155,15 @@ self.addEventListener('fetch', (event) => {
     if (request.headers.get('accept').includes('text/html')) {
         event.respondWith(
             fetch(request).then((response) => {
-                const responseClone = response.clone();
-                caches.open(CACHE_NAME).then((cache) => {
-                    cache.put(request, responseClone);
-                });
+                // Only cache if URL is cacheable
+                if (isCacheableUrl(url)) {
+                    const responseClone = response.clone();
+                    caches.open(CACHE_NAME).then((cache) => {
+                        cache.put(request, responseClone).catch((err) => {
+                            console.warn('[SW] Failed to cache HTML page:', request.url, err);
+                        });
+                    });
+                }
                 return response;
             }).catch(() => {
                 return caches.match(request).then((cachedResponse) => {

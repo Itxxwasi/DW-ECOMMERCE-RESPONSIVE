@@ -4749,34 +4749,186 @@ function loadHomepageSectionConfig(sectionType) {
                         <strong>Video Banner Configuration</strong>
                     </div>
                     <div class="card-body">
-                        <div class="alert alert-info">
-                            <strong>Note:</strong> Video banner section will automatically use the first active video banner from the "Video Banners" section. 
-                            You can optionally configure additional settings below.
-                        </div>
+                        <!-- Video Source -->
                         <div class="mb-3">
-                            <label class="form-label">Select Video Banner (optional - will use first active if not specified)</label>
-                            <select class="form-select" id="configVideoBannerId">
-                                <option value="">Auto (First Active Video Banner)</option>
+                            <label class="form-label fw-bold">Video Source <span class="text-danger">*</span></label>
+                            <select class="form-select" id="configVideoType">
+                                <option value="youtube">YouTube</option>
+                                <option value="vimeo">Vimeo</option>
+                                <option value="direct">Direct Video URL</option>
+                                <option value="file">Upload Video File</option>
                             </select>
-                            <div class="form-text">Video banners will be loaded from "Video Banners" section</div>
+                            <div class="form-text">Choose how you want to provide the video</div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Override Overlay Text (Optional)</label>
-                            <input type="text" class="form-control" id="configOverlayText" placeholder="Leave empty to use video banner title">
+
+                        <!-- Video URL (for YouTube, Vimeo, or Direct) -->
+                        <div class="mb-3" id="configVideoUrlGroup">
+                            <label class="form-label">Video URL <span class="text-danger">*</span></label>
+                            <input type="url" class="form-control" id="configVideoUrl" placeholder="Enter YouTube, Vimeo, or direct video URL">
+                            <div class="form-text" id="configVideoUrlHelp">
+                                For YouTube: https://www.youtube.com/watch?v=... or https://youtu.be/...<br>
+                                For Vimeo: https://vimeo.com/...<br>
+                                For Direct: https://example.com/video.mp4
+                            </div>
+                            <div id="configVideoUrlPreview" class="mt-2"></div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Override CTA Button Text (Optional)</label>
-                            <input type="text" class="form-control" id="configCtaText" placeholder="Leave empty to use video banner button text">
+
+                        <!-- Video File Upload -->
+                        <div class="mb-3" id="configVideoFileGroup" style="display: none;">
+                            <label class="form-label">Upload Video File <span class="text-danger">*</span></label>
+                            <input type="file" class="form-control" id="configVideoFile" accept="video/*">
+                            <div class="form-text">Maximum file size: 500MB. Supported formats: MP4, WebM, OGG, MOV, AVI</div>
+                            <div id="configVideoFileSize" class="mt-1"></div>
+                            <div id="configVideoFilePreview" class="mt-2"></div>
+                            <input type="hidden" id="configVideoFileId">
                         </div>
+
+                        <!-- Poster Image -->
                         <div class="mb-3">
-                            <label class="form-label">Override CTA Button Link (Optional)</label>
-                            <input type="text" class="form-control" id="configCtaLink" placeholder="Leave empty to use video banner link">
+                            <label class="form-label">Poster Image (Optional)</label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <input type="url" class="form-control" id="configVideoPosterUrl" placeholder="Poster image URL">
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="file" class="form-control" id="configVideoPosterFile" accept="image/*">
+                                </div>
+                            </div>
+                            <div class="form-text">Image shown before video plays (recommended for direct video files)</div>
+                            <div id="configVideoPosterPreview" class="mt-2"></div>
+                            <input type="hidden" id="configVideoPosterFileId">
+                        </div>
+
+                        <!-- Video Settings -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Video Settings</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="configVideoAutoplay" checked>
+                                <label class="form-check-label" for="configVideoAutoplay">Autoplay</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="configVideoLoop" checked>
+                                <label class="form-check-label" for="configVideoLoop">Loop</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="configVideoMuted" checked>
+                                <label class="form-check-label" for="configVideoMuted">Muted (required for autoplay)</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="configVideoControls">
+                                <label class="form-check-label" for="configVideoControls">Show Controls</label>
+                            </div>
+                        </div>
+
+                        <!-- Overlay Content -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Overlay Content (Optional)</label>
+                            <div class="mb-2">
+                                <input type="text" class="form-control" id="configOverlayText" placeholder="Overlay title text">
+                            </div>
+                            <div class="mb-2">
+                                <textarea class="form-control" id="configOverlayDescription" rows="2" placeholder="Overlay description text"></textarea>
+                            </div>
+                            <div class="mb-2">
+                                <input type="text" class="form-control" id="configCtaText" placeholder="CTA Button Text">
+                            </div>
+                            <div>
+                                <input type="url" class="form-control" id="configCtaLink" placeholder="CTA Button Link (URL)">
+                            </div>
+                        </div>
+
+                        <!-- Location -->
+                        <div class="mb-3 mt-3">
+                            <label class="form-label fw-bold">Location <span class="text-danger">*</span></label>
+                            <select class="form-select" id="configVideoBannerLocation">
+                                <option value="top">Top (Before all sections)</option>
+                                <option value="bottom">Bottom (After all sections)</option>
+                            </select>
+                            <div class="form-text">Section will be placed based on location</div>
                         </div>
                     </div>
                 </div>
             `;
-            // Load video banners for selection
-            loadVideoBannersForConfig();
+            // Initialize video type change handler
+            setTimeout(() => {
+                // Initialize image field for poster
+                initImageField({ 
+                    urlInput: '#configVideoPosterUrl', 
+                    fileInput: '#configVideoPosterFile', 
+                    preview: '#configVideoPosterPreview' 
+                });
+
+                // Video type change handler
+                $('#configVideoType').change(function() {
+                    const videoType = $(this).val();
+                    if (videoType === 'file') {
+                        $('#configVideoUrlGroup').hide();
+                        $('#configVideoFileGroup').show();
+                        $('#configVideoUrl').removeAttr('required');
+                        $('#configVideoFile').attr('required', 'required');
+                    } else {
+                        $('#configVideoUrlGroup').show();
+                        $('#configVideoFileGroup').hide();
+                        $('#configVideoFile').removeAttr('required');
+                        $('#configVideoUrl').attr('required', 'required');
+                        
+                        // Update help text based on type
+                        const helpText = $('#configVideoUrlHelp');
+                        if (videoType === 'youtube') {
+                            helpText.html('For YouTube: https://www.youtube.com/watch?v=... or https://youtu.be/...');
+                        } else if (videoType === 'vimeo') {
+                            helpText.html('For Vimeo: https://vimeo.com/...');
+                        } else {
+                            helpText.html('For Direct: https://example.com/video.mp4');
+                        }
+                    }
+                });
+
+                // Video URL preview handler
+                $('#configVideoUrl').on('input', function() {
+                    const url = $(this).val().trim();
+                    const videoType = $('#configVideoType').val();
+                    if (url && (videoType === 'youtube' || videoType === 'vimeo')) {
+                        const detectedType = detectVideoTypeFromUrl(url);
+                        if (detectedType === 'youtube' || detectedType === 'vimeo') {
+                            showVideoEmbedPreview('#configVideoUrlPreview', url, detectedType);
+                        }
+                    } else {
+                        $('#configVideoUrlPreview').empty();
+                    }
+                });
+
+                // Video file upload handler
+                $('#configVideoFile').on('change', function() {
+                    const file = this.files && this.files[0];
+                    if (file) {
+                        const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                        const maxSizeMB = 500;
+                        const sizeClass = file.size > (maxSizeMB * 1024 * 1024) ? 'text-danger' : 'text-success';
+                        $('#configVideoFileSize').html(`<span class="${sizeClass}">Video size: ${fileSizeMB} MB</span>`);
+                        if (file.size > (maxSizeMB * 1024 * 1024)) {
+                            $('#configVideoFileSize').append(` <span class="text-danger">(Exceeds ${maxSizeMB} MB limit!)</span>`);
+                        }
+                        
+                        // Show video preview
+                        const reader = new FileReader();
+                        reader.onload = function(event) {
+                            $('#configVideoFilePreview').html(`<video src="${event.target.result}" controls style="max-width: 100%; max-height: 200px;" class="border rounded"></video>`);
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        $('#configVideoFileSize').empty();
+                        $('#configVideoFilePreview').empty();
+                    }
+                });
+
+                // Load location dropdown
+                const existingLocation = $('#configVideoBannerLocation').val() || 'bottom';
+                loadSectionsForLocationGeneric('#configVideoBannerLocation', existingLocation);
+
+                // Trigger initial state
+                $('#configVideoType').trigger('change');
+            }, 100);
             break;
             
         case 'newsletterSocial':
@@ -5912,6 +6064,66 @@ async function saveHomepageSection() {
                 }
             }
         }
+
+        // Handle video banner upload BEFORE building config (if file is selected)
+        if (sectionType === 'videoBanner') {
+            const videoType = $('#configVideoType').val();
+            const videoFile = $('#configVideoFile')[0]?.files?.[0];
+            const videoUrl = $('#configVideoUrl').val()?.trim();
+            
+            // Validate that at least video URL or file is provided
+            if (videoType === 'file') {
+                if (!videoFile) {
+                    showAlert('Video file is required. Please upload a video file.', 'warning');
+                    saveBtn.prop('disabled', false).html(originalText);
+                    return;
+                }
+                
+                // Upload video if file is provided
+                try {
+                    console.log('Uploading video to Cloudinary...');
+                    const uploadResult = await uploadVideoIfNeeded('#configVideoFile', 'videos');
+                    if (uploadResult && uploadResult.url) {
+                        $('#configVideoUrl').val(uploadResult.url); // Update URL field with Cloudinary URL
+                        $('#configVideoFileId').val(uploadResult._id || ''); // Store media ID
+                        console.log('Video uploaded successfully:', uploadResult.url);
+                    } else {
+                        showAlert('Failed to upload video. Please try again.', 'danger');
+                        saveBtn.prop('disabled', false).html(originalText);
+                        return;
+                    }
+                } catch (error) {
+                    console.error('Error uploading video:', error);
+                    showAlert('Error uploading video: ' + (error.message || 'Unknown error'), 'danger');
+                    saveBtn.prop('disabled', false).html(originalText);
+                    return;
+                }
+            } else {
+                // For URL-based videos, validate URL is provided
+                if (!videoUrl) {
+                    showAlert('Video URL is required. Please enter a YouTube, Vimeo, or direct video URL.', 'warning');
+                    saveBtn.prop('disabled', false).html(originalText);
+                    return;
+                }
+            }
+
+            // Handle poster image upload if file is provided
+            const posterFile = $('#configVideoPosterFile')[0]?.files?.[0];
+            if (posterFile) {
+                try {
+                    console.log('Uploading poster image to Cloudinary...');
+                    const uploadResult = await uploadImageIfNeeded('#configVideoPosterFile', 'video-posters');
+                    if (uploadResult && uploadResult.url) {
+                        $('#configVideoPosterUrl').val(uploadResult.url); // Update URL field with Cloudinary URL
+                        $('#configVideoPosterFileId').val(uploadResult._id || ''); // Store media ID
+                        console.log('Poster image uploaded successfully:', uploadResult.url);
+                    }
+                } catch (error) {
+                    console.error('Error uploading poster image:', error);
+                    // Don't block save if poster upload fails, just log it
+                }
+            }
+        }
         
         const config = buildHomepageSectionConfig(sectionType);
         
@@ -6251,13 +6463,48 @@ function buildHomepageSectionConfig(sectionType) {
             break;
             
         case 'videoBanner':
-            const videoBannerId = $('#configVideoBannerId').val();
-            if (videoBannerId) {
-                config.videoBannerId = videoBannerId;
+            // Video source
+            const videoType = $('#configVideoType').val() || 'direct';
+            config.videoType = videoType;
+
+            // Video URL (from upload or direct input) - always save URL to database
+            const videoUrl = $('#configVideoUrl').val()?.trim();
+            if (videoUrl) {
+                config.videoUrl = videoUrl; // Save URL to database
             }
+
+            // Store file ID if uploaded (for reference)
+            const videoFileId = $('#configVideoFileId').val();
+            if (videoFileId) {
+                config.videoFileId = videoFileId;
+            }
+
+            // Poster image URL (from upload or direct input) - always save URL to database
+            const posterUrl = $('#configVideoPosterUrl').val()?.trim();
+            if (posterUrl) {
+                config.posterImage = posterUrl; // Save URL to database
+            }
+
+            // Store poster file ID if uploaded (for reference)
+            const posterFileId = $('#configVideoPosterFileId').val();
+            if (posterFileId) {
+                config.posterFileId = posterFileId;
+            }
+
+            // Video settings
+            config.autoplay = $('#configVideoAutoplay').is(':checked');
+            config.loop = $('#configVideoLoop').is(':checked');
+            config.muted = $('#configVideoMuted').is(':checked');
+            config.controls = $('#configVideoControls').is(':checked');
+
+            // Overlay content
             const overlayText = $('#configOverlayText').val()?.trim();
             if (overlayText) {
                 config.overlayText = overlayText;
+            }
+            const overlayDescription = $('#configOverlayDescription').val()?.trim();
+            if (overlayDescription) {
+                config.overlayDescription = overlayDescription;
             }
             const ctaText = $('#configCtaText').val()?.trim();
             if (ctaText) {
@@ -6267,6 +6514,7 @@ function buildHomepageSectionConfig(sectionType) {
             if (ctaLink) {
                 config.ctaLink = ctaLink;
             }
+
             // Location
             const videoBannerLocation = $('#configVideoBannerLocation').val() || 'bottom';
             config.location = videoBannerLocation;
@@ -6598,14 +6846,79 @@ async function populateHomepageSectionConfig(sectionType, config) {
             break;
             
         case 'videoBanner':
-            if (config.videoBannerId) $('#configVideoBannerId').val(config.videoBannerId);
-            if (config.overlayText) $('#configOverlayText').val(config.overlayText);
-            if (config.ctaText) $('#configCtaText').val(config.ctaText);
-            if (config.ctaLink) $('#configCtaLink').val(config.ctaLink);
-            loadVideoBannersForConfig();
+            // Video type
+            if (config.videoType) {
+                $('#configVideoType').val(config.videoType);
+            }
+            
+            // Video URL (from database)
+            if (config.videoUrl) {
+                $('#configVideoUrl').val(config.videoUrl);
+            }
+            
+            // Video file ID (if uploaded)
+            if (config.videoFileId) {
+                $('#configVideoFileId').val(config.videoFileId);
+            }
+            
+            // Poster image URL (from database)
+            if (config.posterImage) {
+                $('#configVideoPosterUrl').val(config.posterImage);
+            }
+            
+            // Poster file ID (if uploaded)
+            if (config.posterFileId) {
+                $('#configVideoPosterFileId').val(config.posterFileId);
+            }
+            
+            // Video settings
+            if (config.autoplay !== undefined) {
+                $('#configVideoAutoplay').prop('checked', config.autoplay);
+            }
+            if (config.loop !== undefined) {
+                $('#configVideoLoop').prop('checked', config.loop);
+            }
+            if (config.muted !== undefined) {
+                $('#configVideoMuted').prop('checked', config.muted);
+            }
+            if (config.controls !== undefined) {
+                $('#configVideoControls').prop('checked', config.controls);
+            }
+            
+            // Overlay content
+            if (config.overlayText) {
+                $('#configOverlayText').val(config.overlayText);
+            }
+            if (config.overlayDescription) {
+                $('#configOverlayDescription').val(config.overlayDescription);
+            }
+            if (config.ctaText) {
+                $('#configCtaText').val(config.ctaText);
+            }
+            if (config.ctaLink) {
+                $('#configCtaLink').val(config.ctaLink);
+            }
+            
             // Load location dropdown and restore saved location
             const savedVideoBannerLocation = config.location || 'bottom';
             await loadSectionsForLocationGeneric('#configVideoBannerLocation', savedVideoBannerLocation);
+            
+            // Trigger video type change to show/hide appropriate fields
+            setTimeout(() => {
+                $('#configVideoType').trigger('change');
+                // Show preview if URL exists
+                if (config.videoUrl) {
+                    const videoType = config.videoType || 'direct';
+                    const detectedType = detectVideoTypeFromUrl(config.videoUrl);
+                    if (detectedType === 'youtube' || detectedType === 'vimeo') {
+                        showVideoEmbedPreview('#configVideoUrlPreview', config.videoUrl, detectedType);
+                    }
+                }
+                // Show poster preview if exists
+                if (config.posterImage) {
+                    setImagePreview('#configVideoPosterPreview', config.posterImage);
+                }
+            }, 100);
             break;
             
         case 'newsletterSocial':
@@ -7079,6 +7392,74 @@ async function uploadImageIfNeeded(fileInputSelector, folder) {
         console.error('Image upload error:', error);
         
         let errorMessage = 'Error uploading image';
+        if (error.responseJSON && error.responseJSON.message) {
+            errorMessage = error.responseJSON.message;
+        } else if (error.responseText) {
+            try {
+                const errorData = JSON.parse(error.responseText);
+                errorMessage = errorData.message || errorMessage;
+            } catch (e) {
+                errorMessage = error.responseText || errorMessage;
+            }
+        } else if (error.message) {
+            errorMessage = error.message;
+        }
+        
+        throw new Error(errorMessage);
+    }
+}
+
+async function uploadVideoIfNeeded(fileInputSelector, folder) {
+    const input = $(fileInputSelector)[0];
+    if (!input || !input.files || !input.files.length) {
+        return null;
+    }
+
+    const file = input.files[0];
+    const maxSize = 500 * 1024 * 1024; // 500MB for videos
+    const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+    
+    // Client-side file size validation
+    if (file.size > maxSize) {
+        const errorMsg = `Video file size (${fileSizeMB} MB) exceeds maximum limit of 500 MB. Please compress the video or use a smaller file.`;
+        throw new Error(errorMsg);
+    }
+
+    try {
+        const formData = new FormData();
+        formData.append('file', file);
+        if (folder) {
+            formData.append('folder', folder);
+        }
+
+        console.log('Uploading video:', {
+            filename: file.name,
+            size: file.size,
+            sizeMB: fileSizeMB,
+            type: file.type,
+            folder: folder
+        });
+
+        const response = await $.ajax({
+            url: '/api/admin/media',
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'x-auth-token': localStorage.getItem('token')
+            }
+        });
+
+        console.log('Video uploaded successfully:', response);
+
+        // Clear the file input so future saves do not re-upload
+        input.value = '';
+        return response;
+    } catch (error) {
+        console.error('Video upload error:', error);
+        
+        let errorMessage = 'Error uploading video';
         if (error.responseJSON && error.responseJSON.message) {
             errorMessage = error.responseJSON.message;
         } else if (error.responseText) {
