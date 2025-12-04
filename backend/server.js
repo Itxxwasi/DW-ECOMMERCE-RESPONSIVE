@@ -366,6 +366,18 @@ app.get('/register.html', (req, res) => {
     sendHTMLWithCacheBusting(req, res, path.join(__dirname, '../frontend/register.html'));
 });
 
+// Shop page route
+app.get('/shop', (req, res) => {
+    if (req.path.includes('.')) {
+        return res.status(404).send('Not found');
+    }
+    sendHTMLWithCacheBusting(req, res, path.join(__dirname, '../frontend/shop.html'));
+});
+
+app.get('/shop.html', (req, res) => {
+    sendHTMLWithCacheBusting(req, res, path.join(__dirname, '../frontend/shop.html'));
+});
+
 // Catch-all handler to serve the frontend for any non-API routes
 app.use('/', (req, res) => {
     sendHTMLWithCacheBusting(req, res, path.join(__dirname, '../frontend/index.html'));
