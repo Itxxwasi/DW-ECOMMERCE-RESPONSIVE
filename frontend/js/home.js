@@ -351,10 +351,18 @@
                     }
                     const naData = await naResponse.json();
                     const productsArray = Array.isArray(naData?.products) ? naData.products : [];
-                    return {
+                    // Debug: Log section fields to check subtitle/description
+                    console.log('🔍 New Arrivals Section Data:', {
                         sectionId: section._id,
                         title: section.title,
                         subtitle: section.subtitle,
+                        description: section.description,
+                        finalSubtitle: section.subtitle || section.description || ''
+                    });
+                    return {
+                        sectionId: section._id,
+                        title: section.title,
+                        subtitle: section.subtitle || section.description || '',
                         products: productsArray.map(p => ({
                             id: p._id,
                             name: p.name,
@@ -364,14 +372,19 @@
                     };
 
                 case 'topSelling':
-                    // Top selling - fetch from products API
-                    const topSellingResponse = await fetch('/api/products?filter=top-selling&limit=10');
-                    const topProducts = await topSellingResponse.json();
+                    // Top Selling: use section-specific public endpoint (filters isTopSelling)
+                    const topSellingResponse = await fetch(`/api/homepage-sections/${section._id}/data/public`);
+                    if (!topSellingResponse.ok) {
+                        console.error('❌ Failed to fetch Top Selling data:', topSellingResponse.status);
+                        return null;
+                    }
+                    const topSellingData = await topSellingResponse.json();
+                    const topSellingProducts = Array.isArray(topSellingData?.products) ? topSellingData.products : [];
                     return {
                         sectionId: section._id,
                         title: section.title,
                         subtitle: section.subtitle,
-                        products: topProducts.map(p => ({
+                        products: topSellingProducts.map(p => ({
                             id: p._id,
                             name: p.name,
                             price: p.price,
@@ -698,6 +711,18 @@
         console.log(`✅ Template loaded: ${templateName}`);
 
         console.log(`📊 Fetching data for section: ${section.name}`);
+        // Debug: Log section object to check for subtitle/description
+        if (section.type === 'newArrivals') {
+            console.log('🔍 New Arrivals Section Object:', {
+                _id: section._id,
+                name: section.name,
+                title: section.title,
+                subtitle: section.subtitle,
+                description: section.description,
+                hasSubtitle: !!section.subtitle,
+                hasDescription: !!section.description
+            });
+        }
         const data = await fetchSectionData(section);
         if (!data) {
             console.warn(`⚠️ No data returned for section: ${section.name}`);
