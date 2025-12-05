@@ -2322,10 +2322,20 @@ async function loadCartCount() {
 }
 
 function updateCartCount(count) {
+    const cartCount = count || 0;
     const els = document.querySelectorAll('.cart-count');
     els.forEach(el => {
-        el.textContent = String(count || 0);
+        el.textContent = String(cartCount);
+        // Ensure mobile badge is visible when count > 0
+        if (el.classList.contains('mobile-nav-badge')) {
+            if (cartCount > 0) {
+                el.style.display = 'flex';
+            } else {
+                el.style.display = 'none';
+            }
+        }
     });
+    console.log(`Cart count updated to ${cartCount} for ${els.length} element(s)`);
 }
 
 async function handleAddToCart(productId) {

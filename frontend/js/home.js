@@ -1351,11 +1351,8 @@
         event.target.reset();
     };
 
-    // Add to cart handler (placeholder)
-    window.addToCart = function(productId) {
-        // TODO: Implement add to cart functionality
-        console.log('Add to cart:', productId);
-        alert('Product added to cart!');
-    };
+    // Add to cart handler - provided by main.js
+    // Do not override - main.js will provide the real implementation
+    // If main.js hasn't loaded yet, the function will be set when it loads
 
 })();
