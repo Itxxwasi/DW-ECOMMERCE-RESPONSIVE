@@ -2,8 +2,16 @@ document.addEventListener('DOMContentLoaded', () => {
   if (typeof window.loadDepartments === 'function') {
     window.loadDepartments().catch(() => {});
   }
+  // Load categories for navbar (desktop navigation)
   if (typeof window.loadCategoriesForNavbar === 'function') {
-    window.loadCategoriesForNavbar().catch(() => {});
+    window.loadCategoriesForNavbar().then(() => {
+      // After categories are loaded, sync mobile menu
+      if (typeof window.loadMobileMenu === 'function') {
+        setTimeout(() => {
+          window.loadMobileMenu();
+        }, 300);
+      }
+    }).catch(() => {});
   }
   loadCategoriesGrid();
   if (typeof window.loadFooter === 'function') {
