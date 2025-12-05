@@ -99,14 +99,33 @@
         
         // Remove active class from all links and sections
         $('.sidebar-menu li').removeClass('active');
-        $('.content-section').removeClass('active');
+        
+        // Hide all sections and clear any inline styles that might interfere
+        $('.content-section').each(function() {
+            $(this).removeClass('active');
+            $(this).css({
+                'display': 'none',
+                'visibility': 'hidden',
+                'opacity': '0'
+            });
+        });
         
         // Add active class to clicked link
         $(this).parent().addClass('active');
         
         // Show corresponding section
         const sectionId = $(this).attr('href').substring(1) + '-section';
-        $(`#${sectionId}`).addClass('active');
+        const targetSection = $(`#${sectionId}`);
+        
+        // Ensure target section is visible
+        if (targetSection.length) {
+            targetSection.addClass('active');
+            targetSection.css({
+                'display': 'block',
+                'visibility': 'visible',
+                'opacity': '1'
+            });
+        }
 
         // On small screens, close the sidebar after selecting a menu item
         if (window.innerWidth <= 991) {
@@ -114,18 +133,6 @@
             $('#sidebarOverlay').removeClass('active');
             $('body').css('overflow', '');
         }
-        
-        // Ensure section is visible
-        setTimeout(function() {
-            const section = $(`#${sectionId}`);
-            if (section.length) {
-                section.css({
-                    'display': 'block',
-                    'visibility': 'visible',
-                    'opacity': '1'
-                }).addClass('active');
-            }
-        }, 100);
         
         // Load data for the section
         loadSectionData(sectionId);
