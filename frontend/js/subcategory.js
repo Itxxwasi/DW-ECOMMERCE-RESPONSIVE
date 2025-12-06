@@ -98,12 +98,26 @@ function initSubcategoryFilters(subcategoryId) {
     $('#filterToggleBtn').click(function() {
         $('#filterSidebar').addClass('active');
         $('#filterOverlay').addClass('active');
-        $('body').css('overflow', 'hidden');
+        // Only set overflow hidden on mobile (when sidebar is fixed)
+        if (window.innerWidth < 992) {
+            $('body').css({
+                'overflow': 'hidden',
+                'position': 'fixed',
+                'width': '100%'
+            });
+        }
     });
     $('#filterCloseBtn, #filterOverlay').click(function() {
         $('#filterSidebar').removeClass('active');
         $('#filterOverlay').removeClass('active');
-        $('body').css('overflow', '');
+        // Reset overflow and position on mobile
+        if (window.innerWidth < 992) {
+            $('body').css({
+                'overflow': '',
+                'position': '',
+                'width': ''
+            });
+        }
     });
 
     // Zoom filter buttons are handled by filter-layout.js

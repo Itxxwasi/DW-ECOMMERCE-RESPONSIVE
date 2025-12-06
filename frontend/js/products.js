@@ -110,12 +110,26 @@ $(document).ready(function() {
     $(document).on('click', '#filterToggleBtn', function() {
         $('#filterSidebar').addClass('active');
         $('#filterOverlay').addClass('active');
-        $('body').css('overflow', 'hidden');
+        // Only set overflow hidden on mobile (when sidebar is fixed)
+        if (window.innerWidth < 992) {
+            $('body').css({
+                'overflow': 'hidden',
+                'position': 'fixed',
+                'width': '100%'
+            });
+        }
     });
     $(document).on('click', '#filterCloseBtn, #filterOverlay', function() {
         $('#filterSidebar').removeClass('active');
         $('#filterOverlay').removeClass('active');
-        $('body').css('overflow', '');
+        // Reset overflow and position on mobile
+        if (window.innerWidth < 992) {
+            $('body').css({
+                'overflow': '',
+                'position': '',
+                'width': ''
+            });
+        }
     });
 
     $(document).on('click', '#applyFilters', function() { loadProducts(1); });

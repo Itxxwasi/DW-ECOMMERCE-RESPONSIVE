@@ -187,6 +187,10 @@ function initialiseMobileMenu() {
         const closeMenu = () => {
             panel.classList.remove('active');
             document.body.classList.remove('mobile-menu-open');
+            // Reset body styles when closing mobile menu
+            document.body.style.overflow = '';
+            document.body.style.position = '';
+            document.body.style.width = '';
         };
 
         // Remove any existing event listeners by using namespaced events
@@ -220,24 +224,70 @@ function initialiseMobileMenu() {
             }
         });
 
+        // Handle dropdown expansion in mobile menu - MUST BE BEFORE link click handler
+        // Use event delegation that works for both cloned items and existing items
+        // Use a more general selector to catch all possible link structures
+        $(panel).off('click.mobileMenuDropdown').on('click.mobileMenuDropdown', '.mobile-menu-list .has-children a, .mobile-menu-list .menu-item.has-children a, .mobile-menu-list .nav-item.has-children a, .mobile-menu-list .nav-item-category a', function(e) {
+            const $link = $(this);
+            const $menuItem = $link.closest('.menu-item.has-children, .nav-item.has-children, .has-children, .nav-item-category');
+            
+            // Check if this item has a dropdown menu
+            const hasDropdown = $menuItem.find('.dropdown-menu').length > 0;
+            
+            if (!hasDropdown) {
+                // No dropdown, allow normal navigation
+                return;
+            }
+            
+            // On mobile, always toggle the dropdown when clicking a category with subcategories
+            // Prevent navigation to category page, user can click subcategory to navigate
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            
+            const wasExpanded = $menuItem.hasClass('expanded');
+            $menuItem.toggleClass('expanded');
+            
+            // Remove any inline display styles from dropdown menu to allow CSS to control it
+            const $dropdownMenu = $menuItem.find('.dropdown-menu');
+            if ($dropdownMenu.length) {
+                $dropdownMenu.css({
+                    'display': '',
+                    'visibility': '',
+                    'opacity': ''
+                });
+            }
+            
+            // Log for debugging
+            console.log('Mobile menu dropdown clicked:', {
+                category: $link.text().trim(),
+                wasExpanded: wasExpanded,
+                nowExpanded: $menuItem.hasClass('expanded'),
+                hasDropdown: hasDropdown,
+                dropdownItems: $menuItem.find('.dropdown-menu li').length,
+                dropdownVisible: $menuItem.hasClass('expanded') ? 'should be visible' : 'should be hidden'
+            });
+            
+            // Return false to prevent any other handlers from running
+            return false;
+        });
+        
         // Close menu when a link is clicked (but not dropdown toggles)
-        $(panel).off('click.mobileMenuLink').on('click.mobileMenuLink', 'a', function(e) {
+        // This handler runs AFTER the dropdown handler, so dropdown clicks won't trigger this
+        $(panel).off('click.mobileMenuLink').on('click.mobileMenuLink', '.mobile-menu-list a', function(e) {
             const link = $(this);
             const href = link.attr('href');
             
-            // Only close if it's not a dropdown toggle and has a real href
-            if (href && href !== '#' && !link.hasClass('dropdown-toggle') && !link.closest('.has-children .dropdown-toggle').length) {
-                closeMenu();
+            // Skip if this is a dropdown toggle (already handled above)
+            const menuItem = link.closest('.menu-item.has-children, .nav-item.has-children, .has-children, .nav-item-category');
+            if (menuItem && menuItem.find('.dropdown-menu').length > 0) {
+                // This has a dropdown, don't close menu or navigate - already handled by dropdown handler
+                return;
             }
-        });
-        
-        // Handle dropdown expansion in mobile menu
-        $(panel).off('click.mobileMenuDropdown').on('click.mobileMenuDropdown', '.mobile-menu-list .has-children > .cms-item-title', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            const menuItem = $(this).closest('.menu-item.has-children');
-            if (menuItem.length) {
-                menuItem.toggleClass('expanded');
+            
+            // Only close if it's not a dropdown toggle and has a real href
+            if (href && href !== '#' && !link.hasClass('dropdown-toggle')) {
+                closeMenu();
             }
         });
     } catch (err) {
@@ -1077,17 +1127,17 @@ async function loadCategoriesForNavbar() {
     try {
         categoriesLoading = true;
         
-        // Use cache-busting to ensure fresh data
-        const categories = await fetchJSON(`/api/categories?_t=${Date.now()}`);
-        if (!Array.isArray(categories) || categories.length === 0) {
-            categoriesLoading = false;
-            return;
-        }
-        
         // Get the main menu container (new professional navbar structure)
         const mainMenu = document.getElementById('menu-main-menu');
         if (!mainMenu) {
             console.warn('Navbar menu container not found');
+            categoriesLoading = false;
+            return;
+        }
+        
+        // Use cache-busting to ensure fresh data
+        const categories = await fetchJSON(`/api/categories?_t=${Date.now()}`);
+        if (!Array.isArray(categories) || categories.length === 0) {
             categoriesLoading = false;
             return;
         }
@@ -1235,7 +1285,7 @@ async function loadCategoriesForNavbar() {
                                 // Don't use data-bs-toggle to avoid Bootstrap preventing navigation
                                 saleLink.setAttribute('aria-expanded', 'false');
                             } else {
-                                saleMenuItem.className = 'nav-item nav-item-category';
+                                saleMenuItem.className = 'nav-item nav-item-category has-children';
                                 saleLink.className = 'nav-link nav-link-dropdown';
                             }
                             
@@ -1377,7 +1427,7 @@ async function loadCategoriesForNavbar() {
             const menuItem = document.createElement('li');
             
             if (hasSubcategories) {
-                menuItem.className = useMenuItemClass ? 'menu-item type_dropdown has-children' : 'nav-item nav-item-category';
+                menuItem.className = useMenuItemClass ? 'menu-item type_dropdown has-children' : 'nav-item nav-item-category has-children';
             } else {
                 menuItem.className = useMenuItemClass ? 'menu-item' : 'nav-item';
             }
@@ -1402,6 +1452,10 @@ async function loadCategoriesForNavbar() {
             }
             
             if (hasSubcategories) {
+                // Remove any existing dropdown icons first to prevent duplicates
+                const existingIcons = link.querySelectorAll('.icon-dropdown');
+                existingIcons.forEach(icon => icon.remove());
+                
                 // Add dropdown arrow icon - use Font Awesome for consistency
                 // Always use the same structure: span with icon-dropdown class containing the icon
                 const dropdownIcon = document.createElement('span');
@@ -2068,17 +2122,8 @@ function initialiseGlobalDelegates() {
 
         // Mobile menu toggle is handled by initialiseMobileMenu() - skip here to avoid conflicts
         
-        // Handle mobile menu dropdown toggles
-        const mobileDropdownToggle = event.target.closest('.mobile-menu-list .dropdown-toggle');
-        if (mobileDropdownToggle) {
-            event.preventDefault();
-            event.stopPropagation();
-            const menuItem = mobileDropdownToggle.closest('.menu-item');
-            if (menuItem) {
-                menuItem.classList.toggle('expanded');
-            }
-            return false;
-        }
+        // Skip mobile menu dropdown handling here - it's handled by initialiseMobileMenu()
+        // This prevents conflicts between the two handlers
 
         // Handle dropdown toggle for departments
         // Handle dropdown toggles - but allow navigation if clicking on the link text (not the icon)
@@ -2240,30 +2285,55 @@ function loadMobileMenu() {
         Array.from(mainMenu.children).forEach(li => {
             const clone = li.cloneNode(true);
             
-            // Fix dropdown toggles for mobile - make them expandable
-            const dropdownToggle = clone.querySelector('.dropdown-toggle');
-            if (dropdownToggle) {
-                // Remove Bootstrap dropdown attributes
-                dropdownToggle.removeAttribute('data-bs-toggle');
-                dropdownToggle.removeAttribute('id');
+            // Check if this item has children (subcategories)
+            const hasChildren = clone.classList.contains('has-children') || clone.querySelector('.dropdown-menu');
+            
+            if (hasChildren) {
+                // Ensure has-children class is present
+                clone.classList.add('has-children');
                 
-                // Change href to # if it's just #
-                if (dropdownToggle.getAttribute('href') === '#') {
-                    dropdownToggle.setAttribute('href', '#');
+                // Find the link element (could be .cms-item-title, .nav-link, or direct child 'a')
+                let linkElement = clone.querySelector('.cms-item-title, .nav-link');
+                if (!linkElement) {
+                    // If no class-based link found, try to find first anchor element
+                    // Check direct children first, then any anchor
+                    const directChildren = Array.from(clone.children);
+                    linkElement = directChildren.find(child => child.tagName === 'A') || clone.querySelector('a');
                 }
-                
-                // Add click handler for mobile expansion
-                const toggleElement = dropdownToggle;
-                toggleElement.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    clone.classList.toggle('expanded');
-                });
+                if (linkElement) {
+                    // Remove Bootstrap dropdown attributes
+                    linkElement.removeAttribute('data-bs-toggle');
+                    linkElement.removeAttribute('data-bs-target');
+                    linkElement.removeAttribute('id');
+                    
+                    // Add dropdown-toggle class for identification (needed for mobile menu handler)
+                    linkElement.classList.add('dropdown-toggle');
+                    
+                    // Remove duplicate dropdown icons - keep only one
+                    const existingIcons = linkElement.querySelectorAll('.icon-dropdown');
+                    if (existingIcons.length > 1) {
+                        // Keep the first one, remove the rest
+                        for (let i = 1; i < existingIcons.length; i++) {
+                            existingIcons[i].remove();
+                        }
+                    }
+                    
+                    // Ensure the dropdown-menu is present and visible structure
+                    const dropdownMenu = clone.querySelector('.dropdown-menu');
+                    if (dropdownMenu) {
+                        // Remove any inline styles that might interfere with CSS
+                        dropdownMenu.style.display = '';
+                        dropdownMenu.style.visibility = '';
+                        dropdownMenu.style.opacity = '';
+                        // CSS will handle the display via .expanded class
+                    }
+                }
             }
             
-            // Remove any Bootstrap-specific classes that might interfere
+            // Remove any Bootstrap-specific attributes that might interfere
             clone.querySelectorAll('[data-bs-toggle]').forEach(el => {
                 el.removeAttribute('data-bs-toggle');
+                el.removeAttribute('data-bs-target');
             });
             
             mobileMenuList.appendChild(clone);

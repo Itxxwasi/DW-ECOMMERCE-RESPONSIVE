@@ -162,7 +162,12 @@ function initMobileFilterToggle() {
         if (filterOverlay) {
             filterOverlay.classList.add('active');
         }
-        document.body.style.overflow = 'hidden';
+        // Only set overflow hidden on mobile (when sidebar is fixed)
+        if (window.innerWidth < 992) {
+            document.body.style.overflow = 'hidden';
+            document.body.style.position = 'fixed';
+            document.body.style.width = '100%';
+        }
     });
     
     // Close filter sidebar
@@ -171,7 +176,12 @@ function initMobileFilterToggle() {
         if (filterOverlay) {
             filterOverlay.classList.remove('active');
         }
-        document.body.style.overflow = '';
+        // Reset overflow and position on mobile
+        if (window.innerWidth < 992) {
+            document.body.style.overflow = '';
+            document.body.style.position = '';
+            document.body.style.width = '';
+        }
     }
     
     if (filterCloseBtn) {
@@ -187,6 +197,20 @@ function initMobileFilterToggle() {
         if (e.key === 'Escape' && filterSidebar.classList.contains('active')) {
             closeFilter();
         }
+    });
+    
+    // Reset body styles on window resize (in case user rotates device or resizes)
+    let resizeTimeout;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(function() {
+            if (!filterSidebar.classList.contains('active')) {
+                // Only reset if sidebar is closed
+                document.body.style.overflow = '';
+                document.body.style.position = '';
+                document.body.style.width = '';
+            }
+        }, 100);
     });
 }
 
