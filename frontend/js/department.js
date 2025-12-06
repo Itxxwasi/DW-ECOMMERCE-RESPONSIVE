@@ -1,3 +1,16 @@
+// Debounce function for performance optimization
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
 $(document).ready(function() {
     // Get department ID from URL
     const pathParts = window.location.pathname.split('/');
@@ -12,31 +25,32 @@ $(document).ready(function() {
     loadCartCount();
     loadDepartments();
 
-    // Load department data
-    loadDepartmentData(departmentId);
+    // Load department header and categories
+    loadDepartmentHeader(departmentId);
+    // Load brands for filter
+    loadBrandsForFilter();
+    // Initialize filters and products list
+    initDepartmentFilters(departmentId);
 });
 
-function loadDepartmentData(departmentId) {
+function loadDepartmentHeader(departmentId) {
     $.get(`/api/public/departments/${departmentId}`)
         .done(function(data) {
-            const { department, categories, products } = data;
+            const { department, categories } = data;
 
             // Update breadcrumb
             $('#breadcrumbDepartment').text(department.name);
 
-            // Update department header
-            $('#departmentName').text(department.name);
-            $('#departmentDescription').text(department.description || '');
-            
-            // Set department image
+            // Set department image for filter sidebar
             const deptImage = department.imageUpload?.url || department.image || 'https://via.placeholder.com/400x300';
-            $('#departmentImage').attr('src', deptImage).attr('alt', department.name);
+            
+            // Update filter sidebar image
+            if (typeof window.updateFilterSidebarImage === 'function') {
+                window.updateFilterSidebarImage(deptImage, department.name);
+            }
 
             // Render categories
             renderCategories(categories);
-
-            // Render products
-            renderProducts(products);
 
             // Update page title
             document.title = `${department.name} - D.Watson Pharmacy`;
@@ -50,6 +64,186 @@ function loadDepartmentData(departmentId) {
                 alert('Error loading department. Please try again.');
             }
         });
+}
+
+function initDepartmentFilters(departmentId) {
+    $('#filterToggleBtn').click(function() {
+        $('#filterSidebar').addClass('active');
+        $('#filterOverlay').addClass('active');
+        $('body').css('overflow', 'hidden');
+    });
+    $('#filterCloseBtn, #filterOverlay').click(function() {
+        $('#filterSidebar').removeClass('active');
+        $('#filterOverlay').removeClass('active');
+        $('body').css('overflow', '');
+    });
+
+    // Zoom filter buttons are handled by filter-layout.js
+    // Sort by is handled by filter-layout.js
+    
+    // Handle sort by change
+    $(document).on('change', '#sortBy', function() {
+        loadProducts(departmentId, 1);
+    });
+    
+    // Handle availability filter changes (mutually exclusive)
+    $(document).on('change', '#availabilityInStock, #availabilityOutOfStock', function() {
+        // If one is checked, uncheck the other (mutually exclusive)
+        if ($(this).attr('id') === 'availabilityInStock' && $(this).is(':checked')) {
+            $('#availabilityOutOfStock').prop('checked', false);
+        } else if ($(this).attr('id') === 'availabilityOutOfStock' && $(this).is(':checked')) {
+            $('#availabilityInStock').prop('checked', false);
+        }
+        loadProducts(departmentId, 1);
+    });
+    
+    // Handle price filter changes with debounce
+    $(document).on('input', '#minPrice, #maxPrice', debounce(function() {
+        console.log('Price filter input changed, reloading products...');
+        loadProducts(departmentId, 1);
+    }, 300));
+    
+    // Also trigger on blur (when user leaves the field)
+    $(document).on('blur', '#minPrice, #maxPrice', function() {
+        console.log('Price filter field blurred, reloading products...');
+        loadProducts(departmentId, 1);
+    });
+    
+    // Trigger immediately on Enter key
+    $(document).on('keypress', '#minPrice, #maxPrice', function(e) {
+        if (e.which === 13) { // Enter key
+            console.log('Enter key pressed in price filter, reloading products...');
+            loadProducts(departmentId, 1);
+        }
+    });
+    
+    // Expose reload function for zoom filter
+    window.reloadProductsForView = function() {
+        loadProducts(departmentId, 1);
+    };
+    
+    window.reloadProductsForSort = function() {
+        loadProducts(departmentId, 1);
+    };
+
+    $('#applyFilters').click(function() { loadProducts(departmentId, 1); });
+    $('#clearFilters').click(function() {
+        $('#categoryFilter').val('');
+        $('#subcategoryFilter').val('');
+        $('#minPrice').val('');
+        $('#maxPrice').val('');
+        $('#availabilityInStock').prop('checked', false);
+        $('#availabilityOutOfStock').prop('checked', false);
+        $('.brand-checkbox').prop('checked', false);
+        $('#sortBy').val('name');
+        loadProducts(departmentId, 1);
+    });
+
+    updateCategoryFilter(departmentId);
+    
+    // Check if there's a categoryId in URL params and load subcategories
+    const urlParams = new URLSearchParams(window.location.search);
+    const categoryId = urlParams.get('categoryId');
+    if (categoryId) {
+        updateSubcategoryFilter(categoryId);
+    }
+    
+    $('#categoryFilter').on('change', function() {
+        const catId = $(this).val();
+        updateSubcategoryFilter(catId);
+        loadProducts(departmentId, 1);
+    });
+    
+    // Also check categoryFilter value on page load after a delay
+    setTimeout(function() {
+        const catId = $('#categoryFilter').val();
+        if (catId) {
+            updateSubcategoryFilter(catId);
+        }
+    }, 500);
+    
+    loadProducts(departmentId, 1);
+}
+
+let currentView = 'grid';
+function setView(view) { currentView = view === 'list' ? 'list' : 'grid'; }
+
+function updateSubcategoryFilter(categoryId) {
+    const subcatSelect = $('#subcategoryFilter');
+    if (!subcatSelect.length) {
+        console.log('Subcategory filter select not found');
+        return;
+    }
+    subcatSelect.html('<option value="">All Subcategories</option>');
+    if (!categoryId) {
+        console.log('No categoryId provided for subcategory filter');
+        return;
+    }
+    console.log('Loading subcategories for categoryId:', categoryId);
+    $.get(`/api/subcategories?categoryId=${categoryId}`)
+        .done(function(subcategories) {
+            console.log('Subcategories received:', subcategories);
+            const subcatsArray = Array.isArray(subcategories) ? subcategories : [];
+            if (subcatsArray.length === 0) {
+                console.log('No subcategories found for categoryId:', categoryId);
+            }
+            subcatsArray.forEach(sc => {
+                const id = sc._id || sc.id;
+                const name = sc.name || 'Subcategory';
+                subcatSelect.append(`<option value="${id}">${name}</option>`);
+            });
+        })
+        .fail(function(error) {
+            console.error('Error loading subcategories:', error);
+        });
+}
+
+function loadProducts(departmentId, page = 1) {
+    const params = { page, limit: 20, departmentId };
+    const categoryId = $('#categoryFilter').val(); if (categoryId) params.categoryId = categoryId;
+    const subcategoryId = $('#subcategoryFilter').val(); if (subcategoryId) params.subcategoryId = subcategoryId;
+    const minPrice = $('#minPrice').val(); if (minPrice) params.minPrice = minPrice;
+    const maxPrice = $('#maxPrice').val(); if (maxPrice) params.maxPrice = maxPrice;
+    const sort = $('#sortBy').val(); if (sort) params.sort = sort;
+    if ($('#availabilityInStock').is(':checked')) params.availability = 'in-stock';
+    if ($('#availabilityOutOfStock').is(':checked')) params.availability = 'out-of-stock';
+    
+    // Get selected brands from checkboxes
+    const selectedBrands = [];
+    $('.brand-checkbox:checked').each(function() {
+        selectedBrands.push($(this).val());
+    });
+    if (selectedBrands.length > 0) params.brandIds = selectedBrands.join(',');
+
+    const queryString = new URLSearchParams(params).toString();
+    $.get(`/api/public/products?${queryString}`)
+        .done(function(data) {
+            const { products, pagination } = data;
+            const productCount = pagination.total || products.length;
+            $('#productsInfo').text(`${productCount} products`);
+            renderProducts(products);
+            renderPagination(pagination, departmentId);
+            const newUrl = `/department/${departmentId}?${queryString}`;
+            window.history.pushState({}, '', newUrl);
+        })
+        .fail(function(error) {
+            console.error('Error loading products:', error);
+            $('#productsGrid').html('<div class="col-12"><div class="alert alert-danger">Error loading products. Please try again.</div></div>');
+        });
+}
+
+function renderPagination(pagination, departmentId) {
+    const nav = $('#paginationNav');
+    const ul = $('#pagination');
+    if (pagination.pages <= 1) { nav.hide(); return; }
+    nav.show(); ul.html('');
+    if (pagination.page > 1) ul.append(`<li class="page-item"><a class="page-link" href="#" data-page="${pagination.page - 1}">Previous</a></li>`);
+    for (let i = 1; i <= pagination.pages; i++) {
+        const active = i === pagination.page ? 'active' : '';
+        ul.append(`<li class="page-item ${active}"><a class="page-link" href="#" data-page="${i}">${i}</a></li>`);
+    }
+    if (pagination.page < pagination.pages) ul.append(`<li class="page-item"><a class="page-link" href="#" data-page="${pagination.page + 1}">Next</a></li>`);
+    $('.page-link').click(function(e) { e.preventDefault(); const p = $(this).data('page'); loadProducts(departmentId, p); $('html, body').animate({ scrollTop: 0 }, 'slow'); });
 }
 
 function renderCategories(categories) {
@@ -91,17 +285,42 @@ function renderProducts(products) {
 
     noProducts.hide();
     
+    container.toggleClass('list-view', currentView === 'list');
     container.html(products.map(product => {
         const productId = product._id || product.id;
         const productImage = product.imageUpload?.url || product.image || 'https://via.placeholder.com/300x300';
         const finalPrice = product.price * (1 - (product.discount || 0) / 100);
         const categoryName = product.category?.name || 'Uncategorized';
-        
+        if (currentView === 'list') {
+            return `
+            <div class="product-card list">
+                <div class="product-list-row">
+                    <a href="/product/${productId}" class="product-list-image">
+                        <img src="${productImage}" alt="${product.name}">
+                        ${product.discount > 0 ? `<span class="badge bg-danger" style="position: absolute; top: 8px; right: 8px; padding: 4px 8px;">-${product.discount}%</span>` : ''}
+                        ${(!product.stock || product.stock <= 0) ? `<span class="badge bg-dark" style="position: absolute; bottom: 8px; left: 8px; padding: 4px 8px;">Sold Out</span>` : ''}
+                    </a>
+                    <div class="product-list-info">
+                        <a href="/product/${productId}" style="text-decoration: none; color: inherit;">
+                            <h3 class="product-card-title">${product.name}</h3>
+                        </a>
+                        <small class="text-muted d-block mb-2" style="font-size: 12px;">${categoryName}</small>
+                        <div class="product-card-price mb-2">
+                            Rs. ${finalPrice.toFixed(2)}
+                            ${product.discount > 0 ? `<small class="text-muted text-decoration-line-through" style="margin-left: 8px;">Rs. ${product.price.toFixed(2)}</small>` : ''}
+                        </div>
+                        ${product.stock && product.stock > 0 ? `<small class="text-muted d-block mb-2">Availability: ${product.stock} In stock</small>` : `<small class="text-danger d-block mb-2">Out of Stock</small>`}
+                        ${product.stock && product.stock > 0 ? `<button class="product-card-button add-to-cart" data-id="${productId}" data-product-id="${productId}">Add to Cart</button>` : `<button class="product-card-button" disabled>Sold Out</button>`}
+                    </div>
+                </div>
+            </div>`;
+        }
         return `
             <div class="product-card">
                 <a href="/product/${productId}" style="position: relative; display: block;">
                     <img src="${productImage}" alt="${product.name}" class="product-card-image">
                     ${product.discount > 0 ? `<span class="badge bg-danger" style="position: absolute; top: 8px; right: 8px; padding: 4px 8px;">-${product.discount}%</span>` : ''}
+                    ${(!product.stock || product.stock <= 0) ? `<span class="badge bg-dark" style="position: absolute; bottom: 8px; left: 8px; padding: 4px 8px;">Sold Out</span>` : ''}
                 </a>
                 <div class="product-card-info">
                     <small class="text-muted d-block mb-1" style="font-size: 12px;">${categoryName}</small>
@@ -112,9 +331,8 @@ function renderProducts(products) {
                         Rs. ${finalPrice.toFixed(2)}
                         ${product.discount > 0 ? `<small class="text-muted text-decoration-line-through" style="margin-left: 8px;">Rs. ${product.price.toFixed(2)}</small>` : ''}
                     </div>
-                    <button class="product-card-button add-to-cart" data-id="${productId}" data-product-id="${productId}">
-                        Add to Cart
-                    </button>
+                    ${product.stock && product.stock > 0 ? `<small class="text-muted d-block mb-2">Availability: ${product.stock} In stock</small>` : `<small class="text-danger d-block mb-2">Out of Stock</small>`}
+                    ${product.stock && product.stock > 0 ? `<button class="product-card-button add-to-cart" data-id="${productId}" data-product-id="${productId}">Add to Cart</button>` : `<button class="product-card-button" disabled>Sold Out</button>`}
                 </div>
             </div>
         `;
@@ -323,3 +541,53 @@ function loadDepartments() {
         });
 }
 
+function loadBrandsForFilter() {
+    const brandList = $('#brandFilterList');
+    if (!brandList.length) return;
+    brandList.html('');
+    
+    $.get('/api/brands/public')
+        .done(function(brands) {
+            const brandsArray = Array.isArray(brands) ? brands : (brands.brands || brands.data || []);
+            if (brandsArray.length === 0) {
+                brandList.html('<div class="text-muted" style="padding: 10px; font-size: 14px;">No brands available</div>');
+                return;
+            }
+            
+            brandsArray.forEach(b => {
+                const id = b._id || b.id;
+                const name = b.name || 'Brand';
+                brandList.append(`
+                    <div class="brand-item">
+                        <input type="checkbox" class="form-check-input brand-checkbox" id="brand-${id}" value="${id}" data-brand-id="${id}">
+                        <label class="form-check-label" for="brand-${id}">${name}</label>
+                    </div>
+                `);
+            });
+            
+            // Attach change handlers
+            $('.brand-checkbox').on('change', function() {
+                const departmentId = window.location.pathname.split('/').pop();
+                loadProducts(departmentId, 1);
+            });
+        })
+        .fail(function(err) {
+            console.warn('Failed to load brands:', err);
+            brandList.html('<div class="text-muted" style="padding: 10px; font-size: 14px;">Error loading brands</div>');
+        });
+}
+
+function updateCategoryFilter(departmentId) {
+    const categorySelect = $('#categoryFilter');
+    if (!categorySelect.length) return;
+    categorySelect.html('<option value="">All Categories</option>');
+    if (!departmentId) return;
+    $.get(`/api/categories/department/${departmentId}`)
+        .done(function(categories) {
+            (categories || []).forEach(cat => {
+                const id = cat._id || cat.id;
+                const name = cat.name || 'Category';
+                categorySelect.append(`<option value="${id}">${name}</option>`);
+            });
+        });
+}

@@ -70,6 +70,9 @@ $(document).ready(function() {
     $('#addToWishlistBtn').click(function() {
         alert('Wishlist functionality coming soon!');
     });
+
+    // Image zoom/lightbox
+    setupImageLightbox();
 });
 
 function loadProduct(productId) {
@@ -322,6 +325,100 @@ function addToCart(productId, quantity = 1) {
         }
         
         alert(errorMessage);
+    });
+}
+
+function setupImageLightbox() {
+    const img = $('#productImage');
+    if (!img.length) return;
+    let overlay;
+    let scale = 1;
+    let pos = { x: 0, y: 0 };
+    let dragging = false;
+    let last = { x: 0, y: 0 };
+
+    function openLightbox(src) {
+        overlay = $('<div></div>').css({
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.85)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+        });
+        const wrapper = $('<div></div>').css({ position: 'relative', maxWidth: '90vw', maxHeight: '90vh', overflow: 'hidden' });
+        const image = $('<img/>').attr('src', src).css({
+            transform: `translate(0px, 0px) scale(1)`,
+            cursor: 'grab',
+            userSelect: 'none',
+            maxWidth: 'unset',
+            maxHeight: 'unset'
+        });
+        const closeBtn = $('<button>&times;</button>').css({
+            position: 'absolute',
+            top: '8px',
+            right: '12px',
+            background: 'transparent',
+            color: '#fff',
+            fontSize: '28px',
+            border: 'none',
+            lineHeight: '1',
+            cursor: 'pointer'
+        });
+        const controls = $('<div></div>').css({ position: 'absolute', bottom: '12px', right: '12px', display: 'flex', gap: '8px' });
+        const zoomIn = $('<button>+</button>').css({ padding: '6px 10px' });
+        const zoomOut = $('<button>-</button>').css({ padding: '6px 10px' });
+        const reset = $('<button>Reset</button>').css({ padding: '6px 10px' });
+
+        function applyTransform() {
+            image.css('transform', `translate(${pos.x}px, ${pos.y}px) scale(${scale})`);
+        }
+
+        zoomIn.on('click', () => { scale = Math.min(scale + 0.25, 5); applyTransform(); });
+        zoomOut.on('click', () => { scale = Math.max(scale - 0.25, 0.5); applyTransform(); });
+        reset.on('click', () => { scale = 1; pos = { x: 0, y: 0 }; applyTransform(); });
+        closeBtn.on('click', () => { overlay.remove(); overlay = null; });
+        overlay.on('click', (e) => { if (e.target === overlay[0]) { overlay.remove(); overlay = null; } });
+
+        image.on('mousedown touchstart', (e) => {
+            dragging = true;
+            image.css('cursor', 'grabbing');
+            const point = e.touches ? e.touches[0] : e;
+            last = { x: point.clientX, y: point.clientY };
+        });
+        $(document).on('mousemove touchmove', (e) => {
+            if (!dragging) return;
+            const point = e.touches ? e.touches[0] : e;
+            const dx = point.clientX - last.x;
+            const dy = point.clientY - last.y;
+            last = { x: point.clientX, y: point.clientY };
+            pos.x += dx;
+            pos.y += dy;
+            applyTransform();
+        });
+        $(document).on('mouseup touchend', () => {
+            if (!dragging) return;
+            dragging = false;
+            image.css('cursor', 'grab');
+        });
+        wrapper.on('wheel', (e) => {
+            e.preventDefault();
+            const delta = e.originalEvent.deltaY;
+            if (delta < 0) scale = Math.min(scale + 0.1, 5);
+            else scale = Math.max(scale - 0.1, 0.5);
+            applyTransform();
+        });
+
+        controls.append(zoomOut, zoomIn, reset);
+        wrapper.append(image, closeBtn, controls);
+        overlay.append(wrapper);
+        $('body').append(overlay);
+    }
+
+    img.on('click', function() {
+        const src = $(this).attr('src');
+        openLightbox(src);
     });
 }
 

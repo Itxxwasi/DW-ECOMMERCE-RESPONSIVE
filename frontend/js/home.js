@@ -37,6 +37,31 @@
 
     // Cache for templates
     const templateCache = {};
+    const templateFailures = new Set();
+
+    /**
+     * Fetch with retry to tolerate transient network issues
+     */
+    async function fetchWithRetry(url, options = {}) {
+        const attempts = options.attempts || 3;
+        const backoffMs = options.backoffMs || 250;
+        let lastError;
+        for (let i = 0; i < attempts; i++) {
+            try {
+                const res = await fetch(url, options);
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status} ${res.statusText}`);
+                }
+                return res;
+            } catch (err) {
+                lastError = err;
+                if (i < attempts - 1) {
+                    await new Promise(r => setTimeout(r, backoffMs * (i + 1)));
+                }
+            }
+        }
+        throw lastError;
+    }
 
     /**
      * Load HTML template from file
@@ -47,9 +72,10 @@
         }
 
         try {
-            const url = `/home-sections/${templateName}`;
+            const origin = typeof window !== 'undefined' ? window.location.origin : '';
+            const url = new URL(`/home-sections/${templateName}`, origin).toString();
             console.log(`📥 Fetching template from: ${url}`);
-            const response = await fetch(url);
+            const response = await fetchWithRetry(url, { attempts: 2, backoffMs: 300 });
             if (!response.ok) {
                 console.error(`❌ Failed to load template ${templateName}: ${response.status} ${response.statusText}`);
                 throw new Error(`Failed to load template: ${templateName} - ${response.status} ${response.statusText}`);
@@ -63,7 +89,12 @@
             console.log(`✅ Template ${templateName} loaded successfully (${html.length} chars)`);
             return html;
         } catch (error) {
-            console.error(`❌ Error loading template ${templateName}:`, error);
+            if (!templateFailures.has(templateName)) {
+                console.error(`❌ Error loading template ${templateName}:`, error?.message || error);
+                templateFailures.add(templateName);
+            } else {
+                console.warn(`⚠️ Skipping repeated error log for template ${templateName}`);
+            }
             return null;
         }
     }

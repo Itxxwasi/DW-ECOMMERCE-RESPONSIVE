@@ -33,12 +33,14 @@ router.get('/', async (req, res) => {
         const { 
             departmentId, 
             categoryId,
+            subcategoryId,
             brandId,
             search,
             minPrice,
             maxPrice,
             filter,
             sort = 'name',
+            availability,
             page = 1,
             limit = 20
         } = req.query;
@@ -58,8 +60,19 @@ router.get('/', async (req, res) => {
             query.category = categoryId;
         }
 
+        if (subcategoryId) {
+            query.subcategory = subcategoryId;
+        }
+
+        // Handle brandId (single) or brandIds (comma-separated)
         if (brandId) {
             query.brand = brandId;
+        } else if (req.query.brandIds) {
+            // If brandIds is provided as comma-separated string, convert to array
+            const brandIdsArray = req.query.brandIds.split(',').filter(id => id.trim());
+            if (brandIdsArray.length > 0) {
+                query.brand = { $in: brandIdsArray };
+            }
         }
 
         if (search) {
@@ -69,10 +82,40 @@ router.get('/', async (req, res) => {
             ];
         }
 
+        // Price filter - filter by final price (after discount)
+        // We need to use aggregation or filter after fetching since final price = price * (1 - discount/100)
+        // For now, we'll filter by base price and then filter by final price in the application
+        // This is a limitation - ideally we'd use MongoDB aggregation for this
+        let priceFilter = null;
         if (minPrice || maxPrice) {
+            priceFilter = {
+                minPrice: minPrice ? parseFloat(minPrice) : null,
+                maxPrice: maxPrice ? parseFloat(maxPrice) : null
+            };
+            // Also filter by base price as a rough filter (will refine after)
             query.price = {};
-            if (minPrice) query.price.$gte = parseFloat(minPrice);
-            if (maxPrice) query.price.$lte = parseFloat(maxPrice);
+            if (minPrice) {
+                // If minPrice is provided, we need to account for discount
+                // For products with discount, final price = price * (1 - discount/100)
+                // So price >= minPrice / (1 - maxDiscount/100) where maxDiscount is typically 100
+                // For simplicity, we'll use minPrice as the minimum base price
+                query.price.$gte = parseFloat(minPrice);
+            }
+            if (maxPrice) {
+                // For maxPrice, we use it directly as max base price
+                query.price.$lte = parseFloat(maxPrice);
+            }
+        }
+
+        // Availability filter (in-stock or out-of-stock)
+        // in-stock: stock >= 1 (stock greater than or equal to 1)
+        // out-of-stock: stock <= 0 (stock less than or equal to 0)
+        if (availability === 'in-stock') {
+            query.stock = { $gte: 1 };
+            console.log('🔍 Availability filter: in-stock (stock >= 1)');
+        } else if (availability === 'out-of-stock') {
+            query.stock = { $lte: 0 };
+            console.log('🔍 Availability filter: out-of-stock (stock <= 0)');
         }
 
         // Filter by section if provided (sections is an array, use $in)
@@ -109,12 +152,21 @@ router.get('/', async (req, res) => {
         const skip = (parseInt(page) - 1) * parseInt(limit);
         
         let sortQuery = {};
-        switch(sort) {
+        switch(String(sort)) {
             case 'price-asc':
                 sortQuery = { price: 1 };
                 break;
             case 'price-desc':
                 sortQuery = { price: -1 };
+                break;
+            case 'name-desc':
+                sortQuery = { name: -1 };
+                break;
+            case 'newest':
+                sortQuery = { createdAt: -1 };
+                break;
+            case 'oldest':
+                sortQuery = { createdAt: 1 };
                 break;
             case 'name':
             default:
@@ -122,17 +174,97 @@ router.get('/', async (req, res) => {
         }
 
         // Use lean() for faster queries and select only needed fields
-        const products = await Product.find(query)
+        let products = await Product.find(query)
             .select('name description price discount image imageUpload category department stock isFeatured isTrending isNewArrival isBestSelling isTopSelling sections collectionName createdAt')
             .populate('category', 'name _id')
             .populate('department', 'name _id')
             .populate('imageUpload', 'url')
             .sort(sortQuery)
             .skip(skip)
-            .limit(parseInt(limit))
+            .limit(parseInt(limit) * 2) // Get more to account for price filtering
             .lean(); // Faster - returns plain JS objects
 
-        const total = await Product.countDocuments(query);
+        // Apply filters after fetching (for price and availability to ensure accuracy)
+        const originalCount = products.length;
+        
+        // Filter by final price (after discount) if price filter is provided
+        if (priceFilter) {
+            console.log('🔍 Price filter applied:', priceFilter);
+            products = products.filter(product => {
+                const finalPrice = product.price * (1 - (product.discount || 0) / 100);
+                if (priceFilter.minPrice && finalPrice < parseFloat(priceFilter.minPrice)) {
+                    return false;
+                }
+                if (priceFilter.maxPrice && finalPrice > parseFloat(priceFilter.maxPrice)) {
+                    return false;
+                }
+                return true;
+            });
+            console.log(`🔍 Price filter: ${originalCount} products before, ${products.length} products after`);
+        }
+        
+        // Apply availability filter after fetching (double check to ensure accuracy)
+        if (availability === 'in-stock') {
+            const beforeCount = products.length;
+            products = products.filter(product => {
+                const stock = product.stock || 0;
+                return stock >= 1;
+            });
+            console.log(`🔍 In-stock filter: ${beforeCount} products before, ${products.length} products after (stock >= 1)`);
+        } else if (availability === 'out-of-stock') {
+            const beforeCount = products.length;
+            products = products.filter(product => {
+                const stock = product.stock || 0;
+                return stock <= 0;
+            });
+            console.log(`🔍 Out-of-stock filter: ${beforeCount} products before, ${products.length} products after (stock <= 0)`);
+        }
+        
+        // Limit to requested limit after all filtering
+        products = products.slice(0, parseInt(limit));
+
+        // Get total count - need to recalculate if price or availability filter was applied after fetching
+        let total;
+        if (priceFilter || availability) {
+            // For accurate count with price/availability filter, we need to fetch all and count
+            const countQuery = { ...query };
+            // Remove stock filter from count query since we apply it after fetch
+            if (availability) {
+                delete countQuery.stock;
+            }
+            // Remove price filter from count query since we apply it after fetch
+            if (priceFilter) {
+                delete countQuery.price;
+            }
+            
+            const allProducts = await Product.find(countQuery)
+                .select('price discount stock')
+                .lean();
+            
+            let filteredProducts = allProducts;
+            
+            // Apply price filter
+            if (priceFilter) {
+                filteredProducts = filteredProducts.filter(product => {
+                    const finalPrice = product.price * (1 - (product.discount || 0) / 100);
+                    if (priceFilter.minPrice && finalPrice < parseFloat(priceFilter.minPrice)) return false;
+                    if (priceFilter.maxPrice && finalPrice > parseFloat(priceFilter.maxPrice)) return false;
+                    return true;
+                });
+            }
+            
+            // Apply availability filter
+            if (availability === 'in-stock') {
+                filteredProducts = filteredProducts.filter(product => (product.stock || 0) >= 1);
+            } else if (availability === 'out-of-stock') {
+                filteredProducts = filteredProducts.filter(product => (product.stock || 0) <= 0);
+            }
+            
+            total = filteredProducts.length;
+            console.log(`🔍 Total count after filters: ${total}`);
+        } else {
+            total = await Product.countDocuments(query);
+        }
         
         // Debug logging
         if (req.query.section) {

@@ -92,6 +92,7 @@ const SECTION_RENDERERS = {
                     initialiseMobileMenu();
                     initialiseCategoryNavLinks();
                     initializeSearch();
+                    initialiseCollapsibleFilters();
                 }).catch(err => console.warn('Content loading error:', err));
             });
             
@@ -140,6 +141,7 @@ if (document.readyState === 'loading') {
     initialiseGlobalDelegates();
     initialiseMobileMenu();
     initialiseCategoryNavLinks();
+    initialiseCollapsibleFilters();
     // Load footer immediately if DOM is ready
     if (typeof loadFooter === 'function') {
         loadFooter();
@@ -928,12 +930,13 @@ async function loadDepartments() {
             return;
         }
         
-            const menu = document.getElementById('departmentsMenu');
-            const showcase = document.getElementById('departmentsShowcase');
+        const menu = document.getElementById('departmentsMenu');
+        const showcase = document.getElementById('departmentsShowcase');
+        const mainMenu = document.getElementById('menu-main-menu');
+        const professionalNavMenu = document.querySelector('.professional-nav .nav-menu');
         const footerDepartments = document.getElementById('footerDepartments');
 
         if (menu) {
-            // New professional mega menu structure
             menu.innerHTML = `
                 <div class="mega-menu-content">
                     ${departments.map(dept => {
@@ -944,21 +947,79 @@ async function loadDepartments() {
                                 <h3 class="mega-menu-category-title">
                                     <a href="/department/${deptId}">${htmlEscape(dept.name)}</a>
                                 </h3>
-                                <ul class="mega-menu-subcategories">
-                                    <!-- Subcategories will be loaded here if available -->
-                                </ul>
+                                <ul class="mega-menu-subcategories"></ul>
                             </div>
                         </div>
                     `;
                     }).join('')}
                 </div>
             `;
-
             const msg = `✓ Loaded ${departments.length} departments into navbar`;
             if (typeof window.Logger !== 'undefined') {
                 window.Logger.info(msg, { count: departments.length });
             } else {
                 console.log(msg);
+            }
+        }
+
+        // Add/Populate "Shop" mega menu for professional navbar on pages like shop.html
+        if (professionalNavMenu && mainMenu) {
+            let megaContent = document.querySelector('.professional-nav .mega-menu .mega-menu-content');
+            if (!megaContent) {
+                const shopItem = document.createElement('li');
+                shopItem.className = 'nav-item nav-item-dropdown';
+
+                const shopLink = document.createElement('a');
+                shopLink.className = 'nav-link nav-link-dropdown';
+                shopLink.href = '/shop.html';
+                shopLink.textContent = 'Shop';
+
+                const arrow = document.createElement('span');
+                arrow.className = 'nav-arrow';
+                const icon = document.createElement('i');
+                icon.className = 'fas fa-chevron-down';
+                arrow.appendChild(icon);
+                shopLink.appendChild(arrow);
+
+                const megaMenu = document.createElement('div');
+                megaMenu.className = 'mega-menu';
+                megaContent = document.createElement('div');
+                megaContent.className = 'mega-menu-content';
+                megaMenu.appendChild(megaContent);
+
+                shopItem.appendChild(shopLink);
+                shopItem.appendChild(megaMenu);
+
+                // Insert just after the first static item (e.g., Sale) when present
+                const firstItem = mainMenu.querySelector('li');
+                if (firstItem && firstItem.nextSibling) {
+                    mainMenu.insertBefore(shopItem, firstItem.nextSibling);
+                } else {
+                    mainMenu.appendChild(shopItem);
+                }
+            }
+
+            if (megaContent) {
+                megaContent.innerHTML = departments.map(dept => {
+                    const deptId = dept._id || dept.id;
+                    return `
+                        <div class="mega-menu-column">
+                            <div class="mega-menu-category">
+                                <h3 class="mega-menu-category-title">
+                                    <a href="/department/${deptId}">${htmlEscape(dept.name)}</a>
+                                </h3>
+                                <ul class="mega-menu-subcategories"></ul>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                const msg = `✓ Loaded ${departments.length} departments into professional mega menu`;
+                if (typeof window.Logger !== 'undefined') {
+                    window.Logger.info(msg, { count: departments.length });
+                } else {
+                    console.log(msg);
+                }
             }
         }
         
@@ -1706,6 +1767,7 @@ let currentSearchAbortController = null;
 function initializeSearch() {
     const headerSearchInput = document.getElementById('headerSearchInput');
     const searchPopupInput = document.getElementById('searchInput');
+    const headerSearchInputMobile = document.getElementById('headerSearchInputMobile');
     
     if (headerSearchInput) {
         setupSearchInput(headerSearchInput, 'headerSearchDropdown');
@@ -1713,6 +1775,10 @@ function initializeSearch() {
     
     if (searchPopupInput) {
         setupSearchInput(searchPopupInput, 'searchPopupDropdown');
+    }
+
+    if (headerSearchInputMobile) {
+        setupSearchInput(headerSearchInputMobile, 'headerSearchDropdownMobile');
     }
 }
 
@@ -2134,6 +2200,21 @@ function initialiseGlobalDelegates() {
             }
         }
     });
+}
+
+function initialiseCollapsibleFilters() {
+    try {
+        if (typeof $ === 'undefined') {
+            return;
+        }
+        $(document).off('click.filterGroup').on('click.filterGroup', '.filter-group-header', function() {
+            const content = $(this).next('.filter-group-content');
+            content.toggleClass('collapsed');
+            $(this).find('.chevron').toggleClass('rotated');
+        });
+    } catch (err) {
+        console.warn('Failed to initialise collapsible filters', err);
+    }
 }
 
 function toggleMobileMenu() {

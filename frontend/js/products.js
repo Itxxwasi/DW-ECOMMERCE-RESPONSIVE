@@ -1,7 +1,97 @@
+// Performance optimization: Debounce function
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Performance optimization: Throttle function
+function throttle(func, limit) {
+    let inThrottle;
+    return function() {
+        const args = arguments;
+        const context = this;
+        if (!inThrottle) {
+            func.apply(context, args);
+            inThrottle = true;
+            setTimeout(() => inThrottle = false, limit);
+        }
+    };
+}
+
+// Lazy load images - optimized for performance
+let imageObserver = null;
+function lazyLoadImages() {
+    if ('IntersectionObserver' in window) {
+        if (!imageObserver) {
+            imageObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        if (img.dataset && img.dataset.src) {
+                            img.src = img.dataset.src;
+                            img.removeAttribute('data-src');
+                            observer.unobserve(img);
+                        }
+                    }
+                });
+            }, {
+                rootMargin: '50px' // Start loading 50px before image enters viewport
+            });
+        }
+        
+        // Only observe new images
+        document.querySelectorAll('img[data-src]').forEach(img => {
+            if (!img.dataset.observed) {
+                imageObserver.observe(img);
+                img.dataset.observed = 'true';
+            }
+        });
+    } else {
+        // Fallback for browsers without IntersectionObserver
+        document.querySelectorAll('img[data-src]').forEach(img => {
+            if (img.dataset && img.dataset.src) {
+                img.src = img.dataset.src;
+                img.removeAttribute('data-src');
+            }
+        });
+    }
+}
+
 $(document).ready(function() {
-    loadCartCount();
-    loadDepartments();
-    loadFilters();
+    // Use requestIdleCallback for non-critical operations
+    const loadNonCritical = (callback) => {
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(callback, { timeout: 2000 });
+        } else {
+            setTimeout(callback, 100);
+        }
+    };
+    
+    // Load critical content first
+    loadProducts();
+    
+    // Load non-critical content after page is interactive
+    loadNonCritical(() => {
+        loadCartCount();
+        loadDepartments();
+        loadDepartmentsForFilter();
+        loadBrandsForFilter();
+        updateCategoryFilter('');
+        
+        // Check if there's a categoryId in URL params and load subcategories
+        const urlParams = new URLSearchParams(window.location.search);
+        const categoryId = urlParams.get('categoryId');
+        if (categoryId) {
+            updateSubcategoryFilter(categoryId);
+        }
+    });
     
     // Check URL parameters for filters
     const urlParams = new URLSearchParams(window.location.search);
@@ -17,150 +107,216 @@ $(document).ready(function() {
         }
     }
     
-    // Mobile filter toggle functionality
-    $('#filterToggleBtn').click(function() {
+    $(document).on('click', '#filterToggleBtn', function() {
         $('#filterSidebar').addClass('active');
         $('#filterOverlay').addClass('active');
-        $('body').css('overflow', 'hidden'); // Prevent body scroll when filter is open
+        $('body').css('overflow', 'hidden');
     });
-    
-    $('#filterCloseBtn, #filterOverlay').click(function() {
+    $(document).on('click', '#filterCloseBtn, #filterOverlay', function() {
         $('#filterSidebar').removeClass('active');
         $('#filterOverlay').removeClass('active');
-        $('body').css('overflow', ''); // Restore body scroll
-    });
-    
-    // Close filter when clicking outside on mobile
-    $(document).on('click', function(e) {
-        if ($(window).width() <= 767) {
-            if ($('#filterSidebar').hasClass('active') && 
-                !$(e.target).closest('#filterSidebar, #filterToggleBtn').length) {
-                $('#filterSidebar').removeClass('active');
-                $('#filterOverlay').removeClass('active');
-                $('body').css('overflow', '');
-            }
-        }
-    });
-    
-    loadProducts();
-
-    // Filter handlers
-    $('#applyFilters').click(function() {
-        loadProducts();
+        $('body').css('overflow', '');
     });
 
-    $('#clearFilters').click(function() {
-        $('#searchInput').val('');
+    $(document).on('click', '#applyFilters', function() { loadProducts(1); });
+    $(document).on('click', '#clearFilters', function() {
         $('#departmentFilter').val('');
         $('#categoryFilter').val('');
+        $('#subcategoryFilter').val('');
         $('#minPrice').val('');
         $('#maxPrice').val('');
+        $('#availabilityInStock').prop('checked', false);
+        $('#availabilityOutOfStock').prop('checked', false);
+        $('.brand-checkbox').prop('checked', false);
         $('#sortBy').val('name');
-        loadProducts();
+        updateCategoryFilter('');
+        updateSubcategoryFilter('');
+        loadProducts(1);
     });
 
-    // Update category filter when department changes
-    $('#departmentFilter').change(function() {
+    $(document).on('change', '#departmentFilter', function() {
         const deptId = $(this).val();
         updateCategoryFilter(deptId);
+        updateSubcategoryFilter('');
+        $('#subcategoryFilter').val('');
+        loadProducts(1);
     });
-
-    // Enter key on search
-    $('#searchInput').keypress(function(e) {
-        if (e.which === 13) {
-            loadProducts();
+    
+    $(document).on('change', '#categoryFilter', function() {
+        const catId = $(this).val();
+        updateSubcategoryFilter(catId);
+        $('#subcategoryFilter').val('');
+        loadProducts(1);
+    });
+    
+    // Also check categoryFilter value on page load
+    $(document).ready(function() {
+        setTimeout(function() {
+            const categoryId = $('#categoryFilter').val();
+            if (categoryId) {
+                updateSubcategoryFilter(categoryId);
+            }
+        }, 500);
+    });
+    
+    $(document).on('change', '#subcategoryFilter', function() {
+        loadProducts(1);
+    });
+    $(document).on('change', '#availabilityInStock, #availabilityOutOfStock', function() {
+        // If one is checked, uncheck the other (mutually exclusive)
+        if ($(this).attr('id') === 'availabilityInStock' && $(this).is(':checked')) {
+            $('#availabilityOutOfStock').prop('checked', false);
+        } else if ($(this).attr('id') === 'availabilityOutOfStock' && $(this).is(':checked')) {
+            $('#availabilityInStock').prop('checked', false);
+        }
+        loadProducts(1);
+    });
+    $(document).on('change', '#sortBy', function() { loadProducts(1); });
+    
+    // Handle price filter changes with debounce
+    $(document).on('input', '#minPrice, #maxPrice', debounce(function() {
+        console.log('Price filter input changed, reloading products...');
+        loadProducts(1);
+    }, 300));
+    
+    // Also trigger on blur (when user leaves the field)
+    $(document).on('blur', '#minPrice, #maxPrice', function() {
+        console.log('Price filter field blurred, reloading products...');
+        loadProducts(1);
+    });
+    
+    // Trigger immediately on Enter key
+    $(document).on('keypress', '#minPrice, #maxPrice', function(e) {
+        if (e.which === 13) { // Enter key
+            console.log('Enter key pressed in price filter, reloading products...');
+            loadProducts(1);
         }
     });
+
+    // Zoom filter buttons are handled by filter-layout.js
+    // Sort by is handled by filter-layout.js and triggers loadProducts
+    
+    // Handle sort by change
+    $(document).on('change', '#sortBy', function() {
+        loadProducts(1);
+    });
+    
+    // Expose reload function for zoom filter
+    window.reloadProductsForView = function() {
+        loadProducts(1);
+    };
+    
+    window.reloadProductsForSort = function() {
+        loadProducts(1);
+    };
 });
 
 let currentPage = 1;
+let currentView = 'grid';
 
 function loadFilters() {
     // Load will be done when products load
 }
 
-function updateCategoryFilter(departmentId) {
-    const categorySelect = $('#categoryFilter');
-    categorySelect.html('<option value="">All Categories</option>');
+// Filters UI removed
 
-    if (!departmentId) {
-        // Load all categories
-        $.get('/api/categories')
-            .done(function(categories) {
-                categories.forEach(cat => {
-                    const catId = cat._id || cat.id;
-                    categorySelect.append(`<option value="${catId}">${cat.name}</option>`);
-                });
-            });
-        return;
-    }
-
-    // Load categories for selected department
-    $.get(`/api/categories?department=${departmentId}`)
-        .done(function(categories) {
-            categories.forEach(cat => {
-                const catId = cat._id || cat.id;
-                categorySelect.append(`<option value="${catId}">${cat.name}</option>`);
-            });
-        });
-}
+// Filters UI removed
 
 function loadProducts(page = 1) {
     currentPage = page;
     
-    const params = {
-        page: page,
-        limit: 20
-    };
-
-    const search = $('#searchInput').val().trim();
-    if (search) params.search = search;
-
-    const departmentId = $('#departmentFilter').val();
-    if (departmentId) params.departmentId = departmentId;
-
-    const categoryId = $('#categoryFilter').val();
-    if (categoryId) params.categoryId = categoryId;
-
-    const minPrice = $('#minPrice').val();
-    if (minPrice) params.minPrice = minPrice;
-
-    const maxPrice = $('#maxPrice').val();
-    if (maxPrice) params.maxPrice = maxPrice;
-
-    const sort = $('#sortBy').val();
-    if (sort) params.sort = sort;
+    // Show loading state
+    const container = $('#productsGrid');
+    const skeletonHTML = Array(6).fill('<div class="product-loading-skeleton"></div>').join('');
+    container.html(skeletonHTML);
+    
+    const params = { page: page, limit: 20 };
 
     // Check URL for filter parameter
     const urlParams = new URLSearchParams(window.location.search);
     const filter = urlParams.get('filter');
+    const searchParam = urlParams.get('search');
+    if (searchParam) params.search = searchParam.trim();
     if (filter) params.filter = filter;
+
+    const departmentId = $('#departmentFilter').val(); if (departmentId) params.departmentId = departmentId;
+    const categoryId = $('#categoryFilter').val(); if (categoryId) params.categoryId = categoryId;
+    const subcategoryId = $('#subcategoryFilter').val(); if (subcategoryId) params.subcategoryId = subcategoryId;
+    
+    // Price filter - filter by final price (after discount)
+    const minPrice = $('#minPrice').val();
+    const maxPrice = $('#maxPrice').val();
+    if (minPrice) {
+        params.minPrice = minPrice;
+        console.log('Price filter - min:', minPrice);
+    }
+    if (maxPrice) {
+        params.maxPrice = maxPrice;
+        console.log('Price filter - max:', maxPrice);
+    }
+    
+    const sort = $('#sortBy').val(); if (sort) params.sort = sort;
+    
+    // Availability filter - mutually exclusive
+    if ($('#availabilityInStock').is(':checked')) {
+        params.availability = 'in-stock';
+        console.log('Availability filter: in-stock (stock > 0)');
+    } else if ($('#availabilityOutOfStock').is(':checked')) {
+        params.availability = 'out-of-stock';
+        console.log('Availability filter: out-of-stock (stock <= 0)');
+    }
+    
+    // Get selected brands from checkboxes
+    const selectedBrands = [];
+    $('.brand-checkbox:checked').each(function() {
+        selectedBrands.push($(this).val());
+    });
+    if (selectedBrands.length > 0) params.brandIds = selectedBrands.join(',');
 
     const queryString = new URLSearchParams(params).toString();
 
-    $.get(`/api/public/products?${queryString}`)
+    // Use AbortController for request cancellation if needed
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
+    $.ajax({
+        url: `/api/public/products?${queryString}`,
+        method: 'GET',
+        timeout: 30000, // 30 second timeout
+        beforeSend: function() {
+            // Prevent multiple simultaneous requests
+            if (window.productsLoading) {
+                return false;
+            }
+            window.productsLoading = true;
+        }
+    })
         .done(function(data) {
+            clearTimeout(timeoutId);
+            window.productsLoading = false;
+            
             const { products, pagination, filters } = data;
 
-            // Update filter dropdowns
-            updateFilterDropdowns(filters);
+            const productCount = pagination.total || products.length;
+            $('#productsInfo').text(`${productCount} products`);
+            if (filters) { updateFilterDropdowns(filters); }
 
-            // Update products info
-            $('#productsInfo').text(`Showing ${products.length} of ${pagination.total} products`);
-
-            // Render products
+            // Render products with requestAnimationFrame for smooth rendering
             renderProducts(products);
 
             // Render pagination
             renderPagination(pagination);
 
-            // Update URL without reload
+            // Update URL without reload - use replaceState to avoid history bloat
             const newUrl = `/products?${queryString}`;
-            window.history.pushState({}, '', newUrl);
+            window.history.replaceState({}, '', newUrl);
         })
         .fail(function(error) {
+            clearTimeout(timeoutId);
+            window.productsLoading = false;
+            
             console.error('Error loading products:', error);
-            $('#productsGrid').html('<div class="col-12"><div class="alert alert-danger">Error loading products. Please try again.</div></div>');
+            container.html('<div class="col-12"><div class="alert alert-danger">Error loading products. Please try again.</div></div>');
         });
 }
 
@@ -179,6 +335,15 @@ function updateFilterDropdowns(filters) {
 
     // Update category filter based on selected department
     updateCategoryFilter(currentDept);
+
+    const colorSelect = $('#colorFilter');
+    colorSelect.html('<option value="">All Colors</option>');
+    if (filters.colors) {
+        filters.colors.forEach(color => {
+            const val = color.value || color.name || color;
+            colorSelect.append(`<option value="${val}">${val}</option>`);
+        });
+    }
 }
 
 function renderProducts(products) {
@@ -193,48 +358,93 @@ function renderProducts(products) {
 
     noProducts.hide();
     
-    container.html(products.map(product => {
-        const productId = product._id || product.id;
-        const productImage = product.imageUpload?.url || product.image || 'https://via.placeholder.com/300x300';
-        const finalPrice = product.price * (1 - (product.discount || 0) / 100);
-        const categoryName = product.category?.name || 'Uncategorized';
-        const departmentName = product.department?.name || '';
+    // Show loading state
+    container.addClass('product-loading');
+    
+    // Use requestAnimationFrame for smooth rendering
+    requestAnimationFrame(() => {
+        container.toggleClass('list-view', currentView === 'list');
         
-        return `
-            <div class="product-card">
-                <a href="/product/${productId}" style="position: relative; display: block;">
-                    <img src="${productImage}" alt="${product.name}" class="product-card-image">
-                    ${product.discount > 0 ? `<span class="badge bg-danger" style="position: absolute; top: 8px; right: 8px; padding: 4px 8px;">-${product.discount}%</span>` : ''}
-                </a>
-                <div class="product-card-info">
-                    <small class="text-muted d-block mb-1" style="font-size: 12px;">${categoryName}${departmentName ? ` • ${departmentName}` : ''}</small>
-                    <a href="/product/${productId}" style="text-decoration: none; color: inherit;">
-                        <h3 class="product-card-title">${product.name}</h3>
-                    </a>
-                    <div class="product-card-price">
-                        Rs. ${finalPrice.toFixed(2)}
-                        ${product.discount > 0 ? `<small class="text-muted text-decoration-line-through" style="margin-left: 8px;">Rs. ${product.price.toFixed(2)}</small>` : ''}
+        // Build HTML string more efficiently
+        const productsHTML = products.map(product => {
+            const productId = product._id || product.id;
+            const productImage = product.imageUpload?.url || product.image || 'https://via.placeholder.com/300x300';
+            const finalPrice = product.price * (1 - (product.discount || 0) / 100);
+            const categoryName = product.category?.name || 'Uncategorized';
+            const departmentName = product.department?.name || '';
+            const hasDiscount = product.discount > 0;
+            const isSoldOut = !product.stock || product.stock <= 0;
+            
+            if (currentView === 'list') {
+                return `
+                <div class="product-card list">
+                    <div class="product-list-row">
+                        <a href="/product/${productId}" class="product-list-image">
+                            <img data-src="${productImage}" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E" alt="${product.name}" loading="lazy">
+                            ${hasDiscount ? `<span class="badge bg-danger" style="position: absolute; top: 8px; right: 8px; padding: 4px 8px;">-${product.discount}%</span>` : ''}
+                            ${isSoldOut ? `<span class="badge bg-dark" style="position: absolute; bottom: 8px; left: 8px; padding: 4px 8px;">Sold Out</span>` : ''}
+                        </a>
+                        <div class="product-list-info">
+                            <a href="/product/${productId}" style="text-decoration: none; color: inherit;">
+                                <h3 class="product-card-title">${product.name}</h3>
+                            </a>
+                            <small class="text-muted d-block mb-2" style="font-size: 12px;">${categoryName}${departmentName ? ` • ${departmentName}` : ''}</small>
+                            <div class="product-card-price mb-2">
+                                Rs. ${finalPrice.toFixed(2)}
+                                ${hasDiscount ? `<small class="text-muted text-decoration-line-through" style="margin-left: 8px;">Rs. ${product.price.toFixed(2)}</small>` : ''}
+                            </div>
+                            ${!isSoldOut ? `<small class="text-muted d-block mb-2">Availability: ${product.stock} In stock</small>` : `<small class="text-danger d-block mb-2">Out of Stock</small>`}
+                            ${!isSoldOut ? `<button class="product-card-button add-to-cart" data-id="${productId}" data-product-id="${productId}">Add to Cart</button>` : `<button class="product-card-button" disabled>Sold Out</button>`}
+                        </div>
                     </div>
-                    <button class="product-card-button add-to-cart" data-id="${productId}" data-product-id="${productId}">
-                        Add to Cart
-                    </button>
+                </div>`;
+            }
+            return `
+                <div class="product-card">
+                    <a href="/product/${productId}" style="position: relative; display: block;">
+                        <img data-src="${productImage}" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E" alt="${product.name}" class="product-card-image" loading="lazy">
+                        ${hasDiscount ? `<span class="badge bg-danger" style="position: absolute; top: 8px; right: 8px; padding: 4px 8px;">-${product.discount}%</span>` : ''}
+                        ${isSoldOut ? `<span class="badge bg-dark" style="position: absolute; bottom: 8px; left: 8px; padding: 4px 8px;">Sold Out</span>` : ''}
+                    </a>
+                    <div class="product-card-info">
+                        <small class="text-muted d-block mb-1" style="font-size: 12px;">${categoryName}${departmentName ? ` • ${departmentName}` : ''}</small>
+                        <a href="/product/${productId}" style="text-decoration: none; color: inherit;">
+                            <h3 class="product-card-title">${product.name}</h3>
+                        </a>
+                        <div class="product-card-price">
+                            Rs. ${finalPrice.toFixed(2)}
+                            ${hasDiscount ? `<small class="text-muted text-decoration-line-through" style="margin-left: 8px;">Rs. ${product.price.toFixed(2)}</small>` : ''}
+                        </div>
+                        ${!isSoldOut ? `<small class="text-muted d-block mb-2">Availability: ${product.stock} In stock</small>` : `<small class="text-danger d-block mb-2">Out of Stock</small>`}
+                        ${!isSoldOut ? `<button class="product-card-button add-to-cart" data-id="${productId}" data-product-id="${productId}">Add to Cart</button>` : `<button class="product-card-button" disabled>Sold Out</button>`}
+                    </div>
                 </div>
-            </div>
-        `;
-    }).join(''));
-
-    // Attach event handlers - use attr instead of data to get actual string value
-    $('.add-to-cart').off('click.cart').on('click.cart', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        const productId = $(this).attr('data-id') || $(this).attr('data-product-id') || $(this).data('id') || $(this).data('product-id');
-        if (productId) {
-            handleAddToCart(String(productId).trim());
-        } else {
-            console.error('Product ID not found on button:', this);
-            alert('Unable to add product to cart. Product ID is missing.');
-        }
+            `;
+        }).join('');
+        
+        container.html(productsHTML);
+        container.removeClass('product-loading');
+        
+        // Lazy load images after rendering
+        lazyLoadImages();
+        
+        // Attach event handlers using event delegation (more efficient)
+        $(document).off('click.cart', '.add-to-cart').on('click.cart', '.add-to-cart', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const productId = $(this).attr('data-id') || $(this).attr('data-product-id') || $(this).data('id') || $(this).data('product-id');
+            if (productId) {
+                handleAddToCart(String(productId).trim());
+            } else {
+                console.error('Product ID not found on button:', this);
+                alert('Unable to add product to cart. Product ID is missing.');
+            }
+        });
     });
+}
+
+function setView(view) {
+    currentView = view === 'list' ? 'list' : 'grid';
 }
 
 function renderPagination(pagination) {
@@ -272,6 +482,100 @@ function renderPagination(pagination) {
         loadProducts(page);
         $('html, body').animate({ scrollTop: 0 }, 'slow');
     });
+}
+
+function updateCategoryFilter(departmentId) {
+    const categorySelect = $('#categoryFilter');
+    categorySelect.html('<option value="">All Categories</option>');
+
+    if (!departmentId) {
+        $.get('/api/categories')
+            .done(function(categories) {
+                categories.forEach(cat => {
+                    const catId = cat._id || cat.id;
+                    categorySelect.append(`<option value="${catId}">${cat.name}</option>`);
+                });
+            });
+        return;
+    }
+
+    $.get(`/api/categories/department/${departmentId}`)
+        .done(function(categories) {
+            categories.forEach(cat => {
+                const catId = cat._id || cat.id;
+                categorySelect.append(`<option value="${catId}">${cat.name}</option>`);
+            });
+        });
+}
+
+function updateSubcategoryFilter(categoryId) {
+    const subcatSelect = $('#subcategoryFilter');
+    if (!subcatSelect.length) return;
+    subcatSelect.html('<option value="">All Subcategories</option>');
+    if (!categoryId) return;
+    $.get(`/api/subcategories?categoryId=${categoryId}`)
+        .done(function(subcategories) {
+            (subcategories || []).forEach(sc => {
+                const id = sc._id || sc.id;
+                const name = sc.name || 'Subcategory';
+                subcatSelect.append(`<option value="${id}">${name}</option>`);
+            });
+        });
+}
+
+function loadDepartmentsForFilter() {
+    const deptSelect = $('#departmentFilter');
+    if (!deptSelect.length) return;
+    
+    $.get('/api/public/departments')
+        .done(function(departments) {
+            const deptsArray = Array.isArray(departments) ? departments : (departments.departments || departments.data || []);
+            deptSelect.html('<option value="">All Departments</option>');
+            
+            deptsArray.forEach(dept => {
+                const id = dept._id || dept.id;
+                const name = dept.name || 'Department';
+                deptSelect.append(`<option value="${id}">${name}</option>`);
+            });
+        })
+        .fail(function(err) {
+            console.warn('Failed to load departments:', err);
+        });
+}
+
+function loadBrandsForFilter() {
+    const brandList = $('#brandFilterList');
+    if (!brandList.length) return;
+    brandList.html('');
+    
+    $.get('/api/brands/public')
+        .done(function(brands) {
+            const brandsArray = Array.isArray(brands) ? brands : (brands.brands || brands.data || []);
+            if (brandsArray.length === 0) {
+                brandList.html('<div class="text-muted" style="padding: 10px; font-size: 14px;">No brands available</div>');
+                return;
+            }
+            
+            brandsArray.forEach(b => {
+                const id = b._id || b.id;
+                const name = b.name || 'Brand';
+                brandList.append(`
+                    <div class="brand-item">
+                        <input type="checkbox" class="form-check-input brand-checkbox" id="brand-${id}" value="${id}" data-brand-id="${id}">
+                        <label class="form-check-label" for="brand-${id}">${name}</label>
+                    </div>
+                `);
+            });
+            
+            // Attach change handlers
+            $('.brand-checkbox').on('change', function() {
+                loadProducts(1);
+            });
+        })
+        .fail(function(err) {
+            console.warn('Failed to load brands:', err);
+            brandList.html('<div class="text-muted" style="padding: 10px; font-size: 14px;">Error loading brands</div>');
+        });
 }
 
 // Guest cart helper functions
@@ -463,3 +767,16 @@ function loadDepartments() {
         });
 }
 
+function updateColorsFromProducts() {
+    const colorSelect = $('#colorFilter');
+    if (!colorSelect.length) return;
+    const colors = new Set();
+    $('.product-card').each(function() {
+        const c = $(this).attr('data-color') || $(this).data('color');
+        if (c) colors.add(String(c));
+    });
+    if (colors.size) {
+        colorSelect.html('<option value="">All Colors</option>');
+        Array.from(colors).sort().forEach(c => colorSelect.append(`<option value="${c}">${c}</option>`));
+    }
+}

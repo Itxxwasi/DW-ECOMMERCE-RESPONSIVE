@@ -16,6 +16,8 @@
     <link rel="stylesheet" href="/css/mobile-fix.css?v=1">
     <link rel="stylesheet" href="/css/global-responsive.css?v=1">
     <link rel="stylesheet" href="/css/pages-responsive.css?v=2">
+    <link rel="stylesheet" href="/css/mobile-first-responsive.css?v=1">
+    <link rel="stylesheet" href="/css/filter-layout.css?v=2">
     <script src="/js/mobile-scroll-helper.js?v=1" defer></script>
 </head>
 <body>
@@ -39,17 +41,21 @@
                                 </span>
                             </button>
                         </div>
-                        <!-- Search Bar (Left Side) -->
-                        <div class="header-search-left hide-mobile col-md-3">
+                        <!-- Mobile Search Bar (Visible on mobile) -->
+                        <div class="header-search-left hide-desktop col-9">
                             <div class="header-search-wrapper">
                                 <form action="/products.html" method="get" class="header-search-form">
-                                    <input type="text" name="search" class="header-search-input" placeholder="Search for products ..." autocomplete="off">
-                                    <button type="submit" class="header-search-button" aria-label="Search">
-                                        <i class="icon-search"></i>
-                                    </button>
+                                    <div class="search-input-wrapper">
+                                        <input type="text" name="search" id="headerSearchInputMobile" class="header-search-input" placeholder="Search for products ..." autocomplete="off">
+                                        <button type="submit" class="header-search-button" aria-label="Search">
+                                            <i class="icon-search"></i>
+                                        </button>
+                                        <div id="headerSearchDropdownMobile" class="search-dropdown"></div>
+                                    </div>
                                 </form>
                             </div>
                         </div>
+                        
 
                         <!-- Mobile Logo -->
                         <div class="header-logo hide-desktop flex-1">
@@ -97,12 +103,7 @@
                                         <span class="header__counter cart-count">0</span>
                                     </a>
                                 </li>
-                                <!-- Mobile Search Icon -->
-                                <li class="header_search hide-desktop">
-                                    <a href="/search" class="header-search push_side header-icon" data-id="#search_pupop" title="Search">
-                                        <span class="icon"><i class="icon-search"></i></span>
-                                    </a>
-                                </li>
+                                
                             </ul>
                     </div>
                     </div>
@@ -244,13 +245,8 @@
                 <li class="menu-item">
                     <a href="/products.html?category=optics" class="cms-item-title">Optics</a>
                 </li>
-                <li class="menu-item has-children">
-                    <a href="#" class="cms-item-title">
-                        Shop
-                    </a>
-                    <ul class="dropdown-menu sub-menu" id="mobileDepartmentsMenu">
-                        <!-- Departments can be injected here if needed -->
-                    </ul>
+                <li class="menu-item">
+                    <a href="/products.html" class="cms-item-title">Shop</a>
                 </li>
                 <li class="menu-item">
                     <a href="/blog.html" class="cms-item-title">Blog</a>
@@ -288,99 +284,111 @@
         <!-- Filters and Products -->
         <section class="py-5">
             <div class="container">
-                <!-- Filter Toggle Button (Mobile Only) -->
-                <div class="filter-toggle-btn">
-                    <button class="btn" id="filterToggleBtn">
-                        <i class="fas fa-filter"></i> Filters
-                    </button>
-                </div>
-                
-                <!-- Filter Overlay (Mobile Only) -->
-                <div class="filter-overlay" id="filterOverlay"></div>
-                
-                <div class="row">
-                    <!-- Sidebar Filters -->
-                    <div class="col-lg-3 mb-4 filter-sidebar" id="filterSidebar">
-                        <div class="card shadow-sm">
-                            <div class="card-header bg-primary text-white position-relative">
-                                <h5 class="mb-0"><i class="fas fa-filter"></i> Filters</h5>
-                                <button class="filter-close-btn" id="filterCloseBtn" aria-label="Close filters">
-                                    <i class="fas fa-times"></i>
-                                </button>
+                <div class="products-listing-container">
+                    <!-- Side Filter -->
+                    <div class="filter-sidebar" id="filterSidebar">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">FILTER</h5>
+                                <button class="filter-close-btn" id="filterCloseBtn" aria-label="Close filters">×</button>
                             </div>
                             <div class="card-body">
-                                <!-- Search -->
-                                <div class="mb-3">
-                                    <label for="searchInput" class="form-label">Search</label>
-                                    <input type="text" class="form-control" id="searchInput" placeholder="Search products...">
-                                </div>
-
-                                <!-- Department Filter -->
-                                <div class="mb-3">
-                                    <label for="departmentFilter" class="form-label">Department</label>
-                                    <select class="form-select" id="departmentFilter">
-                                        <option value="">All Departments</option>
-                                    </select>
-                                </div>
-
-                                <!-- Category Filter -->
-                                <div class="mb-3">
-                                    <label for="categoryFilter" class="form-label">Category</label>
-                                    <select class="form-select" id="categoryFilter">
-                                        <option value="">All Categories</option>
-                                    </select>
-                                </div>
-
-                                <!-- Price Range -->
-                                <div class="mb-3">
-                                    <label class="form-label">Price Range</label>
-                                    <div class="row g-2">
-                                        <div class="col-6">
-                                            <input type="number" class="form-control" id="minPrice" placeholder="Min" min="0">
-                                        </div>
-                                        <div class="col-6">
-                                            <input type="number" class="form-control" id="maxPrice" placeholder="Max" min="0">
+                                <div class="filter-group">
+                                    <div class="filter-group-header">Brand <span class="chevron"><i class="fas fa-chevron-down"></i></span></div>
+                                    <div class="filter-group-content">
+                                        <div class="brand-list" id="brandFilterList">
+                                            <!-- Brands will be loaded dynamically -->
                                         </div>
                                     </div>
                                 </div>
-
-                                <!-- Sort -->
-                                <div class="mb-3">
-                                    <label for="sortBy" class="form-label">Sort By</label>
-                                    <select class="form-select" id="sortBy">
-                                        <option value="name">Name (A-Z)</option>
-                                        <option value="price-asc">Price: Low to High</option>
-                                        <option value="price-desc">Price: High to Low</option>
-                                    </select>
+                                
+                                <div class="filter-group">
+                                    <div class="filter-group-header">Category <span class="chevron"><i class="fas fa-chevron-down"></i></span></div>
+                                    <div class="filter-group-content">
+                                        <select class="form-select" id="categoryFilter">
+                                            <option value="">All Categories</option>
+                                        </select>
+                                    </div>
                                 </div>
-
-                                <button class="btn btn-primary w-100" id="applyFilters">
-                                    <i class="fas fa-search"></i> Apply Filters
-                                </button>
-                                <button class="btn btn-outline-secondary w-100 mt-2" id="clearFilters">
-                                    <i class="fas fa-times"></i> Clear
-                                </button>
+                                
+                                <div class="filter-group">
+                                    <div class="filter-group-header">Availability <span class="chevron"><i class="fas fa-chevron-down"></i></span></div>
+                                    <div class="filter-group-content">
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" id="availabilityInStock">
+                                            <label class="form-check-label" for="availabilityInStock">In Stock</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" id="availabilityOutOfStock">
+                                            <label class="form-check-label" for="availabilityOutOfStock">Out of Stock</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="filter-group">
+                                    <div class="filter-group-header">Price <span class="chevron"><i class="fas fa-chevron-down"></i></span></div>
+                                    <div class="filter-group-content">
+                                        <div class="row g-2">
+                                            <div class="col-6">
+                                                <input type="number" class="form-control" id="minPrice" placeholder="From" min="0">
+                                            </div>
+                                            <div class="col-6">
+                                                <input type="number" class="form-control" id="maxPrice" placeholder="To" min="0">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                
+                                <!-- Category/Department Image at Bottom -->
+                                <div class="filter-sidebar-image" id="filterSidebarImage">
+                                    <img src="" alt="" id="filterSidebarImageSrc">
+                                </div>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Products Grid -->
-                    <div class="col-lg-9">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h2 class="mb-0">All Products</h2>
-                            <div class="btn-group" role="group">
-                                <button type="button" class="btn btn-outline-primary active" data-view="grid">
-                                    <i class="fas fa-th"></i> Grid
+                    
+                    <!-- Products Area -->
+                    <div class="products-area">
+                        <!-- Top Bar: Product Count, Zoom Filter, Sort By -->
+                        <div class="products-top-bar">
+                            <div class="products-count" id="productsInfo">963 products</div>
+                            
+                            <div class="zoom-filter">
+                                <button type="button" class="zoom-filter-btn" data-view="grid-2" title="2 Columns">
+                                    <i class="fas fa-th"></i>
                                 </button>
-                                <button type="button" class="btn btn-outline-primary" data-view="list">
-                                    <i class="fas fa-list"></i> List
+                                <button type="button" class="zoom-filter-btn active" data-view="grid" title="3 Columns">
+                                    <i class="fas fa-th-large"></i>
                                 </button>
+                                <button type="button" class="zoom-filter-btn" data-view="grid-3" title="4 Columns">
+                                    <i class="fas fa-th"></i>
+                                </button>
+                                <button type="button" class="zoom-filter-btn" data-view="list" title="List View">
+                                    <i class="fas fa-list"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="sort-by-wrapper">
+                                <label>Sort by:</label>
+                                <select class="form-select" id="sortBy">
+                                    <option value="featured">Featured</option>
+                                    <option value="best-selling">Best selling</option>
+                                    <option value="name">Alphabetically, A-Z</option>
+                                    <option value="name-desc">Alphabetically, Z-A</option>
+                                    <option value="price-asc">Price, low to high</option>
+                                    <option value="price-desc">Price, high to low</option>
+                                    <option value="newest">Date, new to old</option>
+                                    <option value="oldest">Date, old to new</option>
+                                </select>
+                            </div>
+                            
+                            <div class="filter-toggle-btn d-lg-none">
+                                <button class="btn" id="filterToggleBtn"><i class="fas fa-filter"></i> Filter</button>
                             </div>
                         </div>
 
-                        <div id="productsInfo" class="mb-3 text-muted"></div>
-
-                        <div class="products-grid" id="productsGrid">
+                        <div class="products-grid view-grid" id="productsGrid">
                             <!-- Products will be loaded here -->
                         </div>
 
@@ -397,6 +405,7 @@
                         </nav>
                     </div>
                 </div>
+                <div class="filter-overlay" id="filterOverlay"></div>
             </div>
         </section>
     </main>
@@ -439,7 +448,7 @@
             <i class="fas fa-home"></i>
             <span class="mobile-nav-label">Home</span>
         </a>
-        <a href="/shop.html" class="mobile-nav-item" data-page="shop">
+        <a href="/products.html" class="mobile-nav-item" data-page="shop">
             <i class="fas fa-th-large"></i>
             <span class="mobile-nav-label">Shop</span>
         </a>
@@ -461,7 +470,9 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/main.js?v=6" defer></script>
+    <script src="/js/filter-layout.js?v=1"></script>
     <script src="/js/products.js"></script>
 </body>
 </html>
+
 
