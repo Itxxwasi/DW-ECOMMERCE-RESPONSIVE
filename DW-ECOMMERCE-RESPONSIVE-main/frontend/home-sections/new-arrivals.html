@@ -1,0 +1,22 @@
+<!-- New Arrivals Section -->
+<section class="home-section" data-section-id="{{sectionId}}">
+    {{#if title}}<h2 class="section-title">{{title}}</h2>{{/if}}
+    {{#if subtitle}}<p class="section-subtitle">{{subtitle}}</p>{{/if}}
+    <div class="product-grid">
+        {{#each products}}
+        <div class="product-card">
+            <a href="/product/{{id}}">
+                <img src="{{imageUrl}}" alt="{{name}}" class="product-card-image" loading="lazy">
+            </a>
+            <div class="product-card-info">
+                <a href="/product/{{id}}">
+                    <h3 class="product-card-title">{{name}}</h3>
+                </a>
+                <div class="product-card-price">Rs {{price}}</div>
+                <button class="product-card-button add-to-cart" data-id="{{id}}" data-product-id="{{id}}">Add to Cart</button>
+            </div>
+        </div>
+        {{/each}}
+    </div>
+</section>
+

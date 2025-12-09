@@ -1,0 +1,36 @@
+{
+  "name": "dwatson-pharmacy",
+  "version": "1.0.0",
+  "description": "D.Watson Pharmacy E-Commerce Platform - Full Stack Application",
+  "main": "run.js",
+  "scripts": {
+    "install:all": "cd backend && npm install",
+    "start": "node run.js",
+    "dev": "node run.js",
+    "backend": "cd backend && npm start",
+    "backend:dev": "cd backend && npm run dev",
+    "setup": "cd backend && npm install",
+    "heroku-postbuild": "cd backend && npm install"
+  },
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  },
+  "keywords": [
+    "pharmacy",
+    "ecommerce",
+    "fullstack",
+    "nodejs",
+    "express",
+    "mongodb"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@dotenvx/dotenvx": "^1.51.1",
+    "cloudinary": "^2.8.0",
+    "dotenv": "^17.2.3",
+    "mongoose": "^9.0.1"
+  }
+}

@@ -1,0 +1,27 @@
+<!-- Brand Section -->
+<section class="home-section brand-section-wrapper" data-section-id="{{sectionId}}">
+    <div class="brand-section-container">
+        <!-- Section Header -->
+        <div class="brand-section-header">
+            {{#if title}}<h2 class="brand-section-title">{{title}}</h2>{{/if}}
+            {{#if subtitle}}<p class="brand-section-subtitle">{{subtitle}}</p>{{/if}}
+        </div>
+        
+        <!-- Brand Grid -->
+        <div class="brand-grid-wrapper">
+            <div class="brand-grid">
+                {{#each brands}}
+                <div class="brand-card">
+                    <a href="/brand-products.html?brand={{id}}&name={{name}}" class="brand-card-link">
+                        <div class="brand-logo-area">
+                            <img src="{{imageUrl}}" alt="{{name}}" class="brand-logo-img" loading="{{#if @first}}eager{{else}}lazy{{/if}}" onerror="this.src='/images/placeholder-brand.jpg'">
+                        </div>
+                        <div class="brand-discount-banner">{{discountText}}</div>
+                    </a>
+                </div>
+                {{/each}}
+            </div>
+        </div>
+    </div>
+</section>
+

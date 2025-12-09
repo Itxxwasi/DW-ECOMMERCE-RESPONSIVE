@@ -1,0 +1,94 @@
+/**
+ * Bootstrap Utility-Based Mobile Scrolling Fixes
+ * Using Bootstrap 5 utility classes to ensure proper scrolling
+ */
+
+/* Force Bootstrap utilities to work on mobile */
+@media (max-width: 991px) {
+    /* Use Bootstrap overflow utilities */
+    .overflow-auto {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    
+    .overflow-visible {
+        overflow-y: visible !important;
+        overflow-x: hidden !important;
+    }
+    
+    /* Bootstrap position utilities */
+    .position-relative {
+        position: relative !important;
+    }
+    
+    .position-fixed {
+        position: fixed !important;
+    }
+    
+    /* Ensure body uses Bootstrap overflow-auto */
+    body.overflow-auto {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        position: relative !important;
+        height: auto !important;
+        min-height: 100vh !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    
+    /* Main content should be visible, not scrollable */
+    main.overflow-visible,
+    .main-content.overflow-visible {
+        overflow-y: visible !important;
+        overflow-x: hidden !important;
+        position: relative !important;
+        height: auto !important;
+        min-height: auto !important;
+        max-height: none !important;
+        padding-bottom: 80px !important; /* Space for mobile bottom nav */
+    }
+    
+    /* Products listing container */
+    .products-listing-container.overflow-visible {
+        overflow-y: visible !important;
+        overflow-x: hidden !important;
+        position: relative !important;
+        height: auto !important;
+        max-height: none !important;
+    }
+    
+    /* Products area */
+    .products-area.overflow-visible {
+        overflow-y: visible !important;
+        overflow-x: hidden !important;
+        position: relative !important;
+        height: auto !important;
+        max-height: none !important;
+    }
+    
+    /* Products grid */
+    #productsGrid.overflow-visible,
+    .products-grid.overflow-visible {
+        overflow-y: visible !important;
+        overflow-x: hidden !important;
+        height: auto !important;
+        max-height: none !important;
+    }
+    
+    /* Container fluid */
+    .container-fluid.overflow-visible {
+        overflow-y: visible !important;
+        overflow-x: hidden !important;
+        height: auto !important;
+        max-height: none !important;
+    }
+    
+    /* Override any conflicting styles */
+    body.overflow-auto:not(.menu-open):not(.filter-sidebar-open) {
+        overflow-y: auto !important;
+        position: relative !important;
+        height: auto !important;
+        touch-action: pan-y pinch-zoom !important;
+    }
+}
+

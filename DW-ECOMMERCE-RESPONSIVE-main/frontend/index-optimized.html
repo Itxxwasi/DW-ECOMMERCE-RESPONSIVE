@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en" class="is-loading">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#2d2a6e">
+    <meta name="description" content="D.Watson Pharmacy - Your trusted health and beauty partner. Shop online for medicines, skincare, and beauty products.">
+    
+    <title>D.Watson Pharmacy - Your Health & Beauty Partner</title>
+    
+    <!-- Preconnect to external domains -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Load critical CSS inline -->
+    <style>
+        /* Critical CSS */
+        :root {
+            --color-bg-body: #ffffff;
+            --color-text-body: #666666;
+            --color-main: #1a1a1a;
+            --color-link: #1a1a1a;
+            --color-link-hover: #d93939;
+            --bg-top-header: #c42525;
+            --color-text-top-header: #ffffff;
+            --transition-normal: 0.3s ease-in-out;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+        }
+        
+        /* Base styles */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        html { -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; height: 100%; }
+        
+        body {
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--color-text-body);
+            background-color: var(--color-bg-body);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            height: 100%;
+            position: relative;
+        }
+        
+        /* Loading screen */
+        .page-loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #2d2a6e;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* No scroll class */
+        .no-scroll {
+            overflow: hidden !important;
+            height: 100% !important;
+            position: fixed !important;
+            width: 100% !important;
+        }
+    </style>
+    
+    <!-- Load non-critical CSS asynchronously -->
+    <link rel="preload" href="/css/optimized.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="/css/optimized.css"></noscript>
+    
+    <!-- Load fonts with font-display: swap -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Inter:wght@400;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript>
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    </noscript>
+    
+    <!-- Load Font Awesome for icons -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"></noscript>
+    
+    <!-- Preload important images -->
+    <link rel="preload" href="/images/logo.png" as="image">
+    
+    <!-- Prefetch likely next pages -->
+    <link rel="prefetch" href="/products.html" as="document">
+    <link rel="prefetch" href="/cart.html" as="document">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    
+    <!-- Preload critical JavaScript -->
+    <link rel="preload" href="/js/mobile-fix.js" as="script">
+    
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful');
+                    })
+                    .catch(err => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+        
+        // Hide loading screen when page is fully loaded
+        window.addEventListener('load', function() {
+            const loadingScreen = document.querySelector('.page-loading');
+            if (loadingScreen) {
+                loadingScreen.classList.add('hidden');
+                setTimeout(() => { loadingScreen.remove(); }, 300);
+            }
+        });
+    </script>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="page-loading">
+        <div class="loader"></div>
+    </div>
+    
+    <!-- Skip to main content link for accessibility -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-container">
+                <!-- Mobile Menu Toggle -->
+                <button class="mobile-menu-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="main-navigation">
+                    <span class="menu-icon"></span>
+                    <span class="menu-icon"></span>
+                    <span class="menu-icon"></span>
+                </button>
+                
+                <!-- Logo -->
+                <div class="logo">
+                    <a href="/" aria-label="D.Watson Pharmacy Home">
+                        <img src="/images/logo.png" alt="D.Watson Pharmacy" width="180" height="50">
+                    </a>
+                </div>
+                
+                <!-- Main Navigation -->
+                <nav class="nav-main" id="main-navigation" aria-label="Main Navigation">
+                    <ul class="nav-list">
+                        <li class="nav-item">
+                            <a href="/" class="nav-link active" aria-current="page">Home</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a href="/products" class="nav-link dropdown-toggle" id="products-dropdown" aria-haspopup="true" aria-expanded="false">
+                                Products
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="products-dropdown">
+                                <li><a class="dropdown-item" href="/products?category=medicines">Medicines</a></li>
+                                <li><a class="dropdown-item" href="/products?category=skincare">Skincare</a></li>
+                                <li><a class="dropdown-item" href="/products?category=beauty">Beauty</a></li>
+                                <li><a class="dropdown-item" href="/products?category=vitamins">Vitamins & Supplements</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/about" class="nav-link">About Us</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/contact" class="nav-link">Contact</a>
+                        </li>
+                    </ul>
+                </nav>
+                
+                <!-- Header Actions -->
+                <div class="header-actions">
+                    <a href="/search" class="header-action" aria-label="Search">
+                        <i class="fas fa-search"></i>
+                    </a>
+                    <a href="/account" class="header-action" aria-label="My Account">
+                        <i class="fas fa-user"></i>
+                    </a>
+                    <a href="/cart" class="header-action cart-icon" aria-label="Shopping Cart">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count">0</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Overlay for mobile menu -->
+    <div class="overlay"></div>
+    
+    <!-- Main Content -->
+    <main id="main-content" class="main-content">
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="hero-slider">
+                <div class="hero-slide active">
+                    <div class="container">
+                        <div class="hero-content">
+                            <h1>Welcome to D.Watson Pharmacy</h1>
+                            <p>Your trusted health and beauty partner</p>
+                            <a href="/products" class="btn btn-primary">Shop Now</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Featured Categories -->
+        <section class="featured-categories section-padding">
+            <div class="container">
+                <h2 class="section-title">Shop by Category</h2>
+                <div class="category-grid">
+                    <!-- Categories will be loaded here via JavaScript -->
+                </div>
+            </div>
+        </section>
+        
+        <!-- Featured Products -->
+        <section class="featured-products section-padding">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Featured Products</h2>
+                    <a href="/products" class="view-all">View All</a>
+                </div>
+                <div class="product-grid">
+                    <!-- Products will be loaded here via JavaScript -->
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-widget">
+                    <h3>About Us</h3>
+                    <p>D.Watson Pharmacy is your trusted health and beauty partner, providing high-quality products and expert advice.</p>
+                </div>
+                <div class="footer-widget">
+                    <h3>Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="/about">About Us</a></li>
+                        <li><a href="/contact">Contact Us</a></li>
+                        <li><a href="/faq">FAQs</a></li>
+                        <li><a href="/privacy-policy">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-widget">
+                    <h3>Contact Us</h3>
+                    <address>
+                        <p><i class="fas fa-map-marker-alt"></i> 123 Health Street, City, Country</p>
+                        <p><i class="fas fa-phone"></i> +1 234 567 890</p>
+                        <p><i class="fas fa-envelope"></i> info@dwatsonpharmacy.com</p>
+                    </address>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 D.Watson Pharmacy. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Mobile Bottom Navigation -->
+    <nav class="mobile-bottom-nav">
+        <a href="/" class="mobile-nav-link active" aria-label="Home">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+        <a href="/categories" class="mobile-nav-link" aria-label="Categories">
+            <i class="fas fa-th-large"></i>
+            <span>Categories</span>
+        </a>
+        <a href="/search" class="mobile-nav-link" aria-label="Search">
+            <i class="fas fa-search"></i>
+            <span>Search</span>
+        </a>
+        <a href="/account" class="mobile-nav-link" aria-label="Account">
+            <i class="fas fa-user"></i>
+            <span>Account</span>
+        </a>
+        <a href="/cart" class="mobile-nav-link cart-icon" aria-label="Cart">
+            <i class="fas fa-shopping-cart"></i>
+            <span>Cart</span>
+            <span class="cart-count">0</span>
+        </a>
+    </nav>
+    
+    <!-- Back to Top Button -->
+    <button id="back-to-top" class="back-to-top" aria-label="Back to top">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+    
+    <!-- JavaScript Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fontfaceobserver/2.3.0/fontfaceobserver.standalone.js" integrity="sha512-8G5WnX4JX+oJpQ4w8H6A6F1q4uVw1g4JgMp4J1vzJg6F5LQx0F5V5Q5V5f5V5V5f5V5V5f5V5V5f5V5V5f5V5" crossorigin="anonymous" async></script>
+    
+    <!-- Main JavaScript -->
+    <script src="/js/mobile-fix.js" defer></script>
+    
+    <!-- Initialize page -->
+    <script>
+        // Initialize Font Face Observer
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.FontFaceObserver) {
+                const inter = new FontFaceObserver('Inter');
+                const montserrat = new FontFaceObserver('Montserrat');
+                
+                Promise.all([
+                    inter.load(),
+                    montserrat.load()
+                ]).then(function() {
+                    document.documentElement.classList.add('fonts-loaded');
+                }).catch(function() {
+                    document.documentElement.classList.add('fonts-failed');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

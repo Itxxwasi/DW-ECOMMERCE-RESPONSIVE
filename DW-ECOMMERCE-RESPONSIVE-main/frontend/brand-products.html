@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#c42525">
+    <title>Brand Products - D.Watson Pharmacy</title>
+
+    <!-- Fonts & CSS (reuse category assets for consistent layout & responsive behavior) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/global-fonts.css?v=1">
+    <link rel="stylesheet" href="/css/style.css?v=2">
+    <link rel="stylesheet" href="/css/dwatson-styles.css?v=2">
+    <link rel="stylesheet" href="/css/global-responsive.css?v=1">
+    <link rel="stylesheet" href="/css/pages-responsive.css?v=2">
+    <link rel="stylesheet" href="/css/mobile-first-responsive.css?v=1">
+    <link rel="stylesheet" href="/css/filter-layout.css?v=2">
+    <link rel="stylesheet" href="/css/header-navbar.css?v=3">
+
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="page-loading"><div style="text-align:center"><div style="width:40px;height:40px;border:4px solid #f3f3f3;border-top:4px solid #2d2a6e;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto"></div></div></div>
+
+    <!-- Announcement bar + Header/nav (same as category) -->
+    <div id="announcement-bar-container"></div>
+    <div class="header-container">
+        <div class="header-main">
+            <div class="header-search">
+                <form class="search-form">
+                    <div class="search-input-wrapper">
+                        <input type="text" id="headerSearchInput" placeholder="search">
+                        <button type="submit"><i class="fas fa-search"></i></button>
+                    </div>
+                    <div id="headerSearchDropdown" class="search-results-dropdown"></div>
+                </form>
+            </div>
+            <div class="logo-wrapper">
+                <a href="/">
+                    <img src="/images/logo.png" alt="D.Watson Pharmacy" class="header-logo">
+                </a>
+                <a href="/cart.html" class="header-icon" id="cartIcon"><span class="icon"><i class="fas fa-shopping-cart"></i></span><span class="header__counter cart-count">0</span></a>
+            </div>
+            <div class="header-icons">
+                <button class="category-nav-toggle" id="categoryNavToggle" aria-label="Toggle categories menu"><span class="toggle-icon"><span class="toggle-line"></span><span class="toggle-line"></span><span class="toggle-line"></span></span></button>
+                <a href="/login.html" class="header-icon" title="Account"><span class="icon"><i class="far fa-user"></i></span></a>
+                <a href="#" class="header-icon" id="wishlistIcon" title="Wishlist"><span class="icon"><i class="far fa-heart"></i></span><span class="header__counter wishlist-count">0</span></a>
+                <a href="/orders.html" class="header-icon" title="Orders"><span class="icon"><i class="fas fa-shopping-bag"></i></span></a>
+                <a href="/cart.html" class="header-icon" id="cartIconDesktop" title="Cart"><span class="icon"><i class="fas fa-shopping-cart"></i></span><span class="header__counter cart-count">0</span></a>
+            </div>
+        </div>
+
+        <div class="category-nav-overlay" id="categoryNavOverlay"></div>
+        <nav class="category-nav">
+            <button class="category-nav-close" id="categoryNavClose" aria-label="Close menu">CLOSE X</button>
+            <div class="category-nav-search"><input type="text" placeholder="Search" id="categoryMenuSearch"><button type="button" id="categoryMenuSearchBtn"><i class="fas fa-search"></i></button><div id="categoryMenuSearchResults" class="category-nav-search-results"></div></div>
+            <ul class="category-menu" id="categoryMenu"></ul>
+        </nav>
+    </div>
+
+    <main class="main-content">
+        <div class="container-fluid px-0">
+            <nav aria-label="breadcrumb" class="breadcrumb-nav"><div class="container"><ol class="breadcrumb" id="breadcrumb"><li class="breadcrumb-item"><a href="/">Home</a></li><li class="breadcrumb-item active" id="brandNameBreadcrumb">Brand</li></ol></div></nav>
+
+            <div class="products-listing-container">
+                <!-- Filter Sidebar -->
+                <aside class="filter-sidebar" id="filterSidebar">
+                    <div class="card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center"><h5 class="mb-0">Filters</h5><button type="button" class="btn-close filter-close-btn" id="filterCloseBtn" aria-label="Close"></button></div>
+                        <div class="card-body">
+                            <div class="filter-group"><div class="filter-group-header"><span>BRAND</span><span class="chevron"></span></div><div class="filter-group-content"><div id="brandFilterList" class="brand-list"></div></div></div>
+                            <div class="filter-group"><div class="filter-group-header"><span>CATEGORY</span><span class="chevron"></span></div><div class="filter-group-content"><select id="categoryFilter" class="form-select form-select-sm"><option value="">All Categories</option></select></div></div>
+                            <div class="filter-group"><div class="filter-group-header"><span>SUBCATEGORY</span><span class="chevron"></span></div><div class="filter-group-content"><select id="subcategoryFilter" class="form-select form-select-sm"><option value="">All Subcategories</option></select></div></div>
+                            <div class="filter-group"><div class="filter-group-header"><span>PRICE</span><span class="chevron"></span></div><div class="filter-group-content"><div class="row g-2"><div class="col-6"><input type="number" id="minPrice" class="form-control form-control-sm" placeholder="Min" value="0"></div><div class="col-6"><input type="number" id="maxPrice" class="form-control form-control-sm" placeholder="Max" value="10000"></div></div>
+                                <div class="d-flex gap-2 mt-2">
+                                    <button id="applyPriceFilter" class="btn btn-sm btn-outline-primary w-50">Apply</button>
+                                    <button id="clearFilters" class="btn btn-sm btn-outline-secondary w-50">Clear</button>
+                                </div>
+                            </div></div>
+                        </div>
+                        <div class="filter-sidebar-image" id="filterSidebarImage" style="display:none;"><img id="filterSidebarImageSrc" src="" alt="" class="img-fluid"></div>
+                    </div>
+                </aside>
+
+                <!-- Products Area -->
+                <div class="products-area">
+                    <div class="products-top-bar">
+                        <div class="products-count"><span id="productsCount">0 products</span></div>
+                        <!-- Brand header (needed by brand-products.js) -->
+                        <div class="brand-header ms-3 me-3">
+                            <h1 id="brandTitle" class="h5 mb-0">Loading...</h1>
+                            <p id="brandSubtitle" class="text-muted small mb-0">&nbsp;</p>
+                            <div id="brandDiscount" style="display:none;margin-top:6px;"><span class="badge bg-danger fs-6" id="discountText"></span></div>
+                        </div>
+                        <div class="zoom-filter">
+                            <button type="button" class="zoom-btn active" data-view="grid" title="Grid View"><i class="fas fa-th"></i></button>
+                            <button type="button" class="zoom-btn" data-view="grid-2" title="2 Columns"><i class="fas fa-th-large"></i></button>
+                            <button type="button" class="zoom-btn" data-view="grid-3" title="3 Columns"><i class="fas fa-th-list"></i></button>
+                            <button type="button" class="zoom-btn" data-view="list" title="List View"><i class="fas fa-list"></i></button>
+                        </div>
+                        <div class="sort-by-wrapper"><label for="sortBy">Sort By:</label><select id="sortBy" class="form-select form-select-sm"><option value="name">Name (A-Z)</option><option value="-name">Name (Z-A)</option><option value="price">Price (Low to High)</option><option value="-price">Price (High to Low)</option><option value="-createdAt">Newest First</option><option value="createdAt">Oldest First</option></select></div>
+                        <button type="button" class="filter-toggle-btn" id="filterToggleBtn"><i class="fas fa-filter"></i> Filters</button>
+                    </div>
+
+                    <!-- Products container expected by brand-products.js -->
+                    <div id="productsContainer" class="row"></div>
+
+                    <!-- Legacy/productsGrid kept for compatibility with other scripts -->
+                    <div id="productsGrid" class="products-grid view-grid" style="display:none;"></div>
+
+                    <nav aria-label="Products pagination" class="mt-4"><ul id="pagination" class="pagination justify-content-center"></ul></nav>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="filter-overlay" id="filterOverlay"></div>
+
+    <footer class="footer" id="siteFooter"></footer>
+
+    <nav class="mobile-bottom-nav">
+        <a href="/" class="mobile-nav-item" data-page="home"><i class="fas fa-home"></i><span class="mobile-nav-label">Home</span></a>
+        <a href="/products.html" class="mobile-nav-item" data-page="shop"><i class="fas fa-th-large"></i><span class="mobile-nav-label">Shop</span></a>
+        <a href="/cart.html" class="mobile-nav-item" data-page="cart"><i class="fas fa-shopping-bag"></i><span class="mobile-nav-label">Cart</span><span class="mobile-nav-badge cart-count">0</span></a>
+        <a href="#" class="mobile-nav-item push_side" data-id="#search_pupop" data-page="search"><i class="fas fa-search"></i><span class="mobile-nav-label">Search</span></a>
+        <a href="/login.html" class="mobile-nav-item" data-page="account"><i class="far fa-user"></i><span class="mobile-nav-label">Account</span></a>
+    </nav>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" defer></script>
+    <script src="/js/logger.js" defer></script>
+    <script src="/js/main.js?v=10" defer></script>
+    <script src="/js/products.js?v=2" defer></script>
+    <script src="/js/filter-layout.js?v=2" defer></script>
+    <script src="/js/brand-products.js?v=2" defer></script>
+    <script src="/js/header-navbar.js?v=1" defer></script>
+
+    <script>
+        window.addEventListener('load', function() {
+            const loader = document.querySelector('.page-loading');
+            if (loader) { loader.classList.add('hidden'); setTimeout(() => loader.remove(), 300); }
+            setTimeout(function() { if (typeof window.loadFooter === 'function') window.loadFooter(); }, 1000);
+        });
+    </script>
+
+    <!-- Search Popup -->
+    <div id="search_pupop" class="push-side-panel"><div class="push-side-panel__wrapper"><span class="close-push">&times;</span></div></div>
+</body>
+</html>

@@ -1,0 +1,1187 @@
+/**
+ * Mobile Responsiveness Fixes
+ * Comprehensive fixes for mobile devices
+ */
+
+/* ============ Global Touch Actions ============ */
+/* Improve touch and scroll performance */
+* {
+    touch-action: manipulation;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Base body styles for better scrolling */
+html {
+    width: 100%;
+    height: auto;
+    overflow-x: hidden;
+}
+
+/* Allow natural scrolling on body */
+body {
+    width: 100%;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+    overscroll-behavior-x: none; /* Prevent horizontal overscroll */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ============ Shop Category Scrolling Fix ============ */
+.shop-by-category {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox */
+}
+
+.shop-by-category::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+/* ============ Base Mobile Fixes ============ */
+@media (max-width: 991px) {
+    /* Fix shop by category horizontal scroll */
+    .shop-by-category {
+        overflow-x: auto;
+        white-space: nowrap;
+        padding: 0 15px 20px;
+        margin: 0 -15px;
+        width: 100vw;
+        position: relative;
+        left: 50%;
+        right: 50%;
+        margin-left: -50vw;
+        margin-right: -50vw;
+    }
+
+    .shop-by-category .row {
+        display: inline-flex;
+        flex-wrap: nowrap;
+        width: auto;
+        min-width: 100%;
+        padding: 0 15px;
+    }
+
+    .shop-by-category .col-md-2,
+    .shop-by-category .col-6 {
+        flex: 0 0 auto;
+        width: 160px;
+        margin-right: 15px;
+        white-space: normal;
+    }
+
+    /* Prevent horizontal scroll */
+    html, body {
+        overflow-x: hidden;
+        max-width: 100%;
+    }
+    
+    /* Container fixes */
+    .container,
+    .container-fluid {
+        padding-left: 15px;
+        padding-right: 15px;
+        max-width: 100%;
+    }
+    
+    /* Exclude login container from width restrictions */
+    .login-container {
+        max-width: 450px !important;
+        width: auto !important;
+    }
+    
+    /* Typography fixes */
+    h1, .h1 {
+        font-size: 28px !important;
+        line-height: 1.3;
+    }
+    
+    h2, .h2 {
+        font-size: 24px !important;
+        line-height: 1.3;
+    }
+    
+    h3, .h3 {
+        font-size: 20px !important;
+    }
+    
+    h4, .h4 {
+        font-size: 18px !important;
+    }
+    
+    p {
+        font-size: 14px;
+        line-height: 1.6;
+    }
+}
+
+/* ============ Header & Navigation Mobile Fixes ============ */
+@media (max-width: 991px) {
+    /* Top bar */
+    .top-bar {
+        font-size: 12px;
+        padding: 6px 0;
+        text-align: center;
+    }
+    
+    .top-bar a {
+        margin: 0 8px;
+        display: inline-block;
+    }
+    
+    /* Navbar */
+    .navbar {
+        position: static;  /* Avoid sticky navbar issues on mobile */
+        width: 100%;
+        padding: 12px 0;
+    }
+    
+    .navbar-brand {
+        padding: 0;
+    }
+    
+    .logo {
+        max-height: 36px;
+    }
+    
+    /* Search box */
+    .search-box {
+        width: 100%;
+        max-width: 100%;
+        margin: 10px 0;
+    }
+    
+    .search-box input {
+        width: 100%;
+        font-size: 14px;
+        padding: 8px 40px 8px 12px;
+    }
+    
+    /* Cart icon */
+    .cart-icon {
+        font-size: 18px;
+        margin-left: 10px;
+    }
+    
+    /* Mobile menu button - ensure it's clickable */
+    .js-mobile-menu {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 10001;
+        position: relative;
+        background: transparent !important;
+        border: none !important;
+        padding: 8px !important;
+    }
+    
+    .js-mobile-menu:active,
+    .js-mobile-menu:focus {
+        outline: 2px solid rgba(255, 255, 255, 0.5);
+        outline-offset: 2px;
+    }
+    
+    /* Mobile menu panel - ensure it works */
+    .mobile-menu-panel {
+        display: block !important;
+        visibility: visible !important;
+        -webkit-overflow-scrolling: touch;
+        overflow-y: auto;
+    }
+    
+    /* Fix body scroll when menu is open */
+    body.menu-open,
+    body.filter-open {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        touch-action: none;
+    }
+    
+    /* Ensure main content can scroll */
+    main, .main-content {
+        flex: 1 0 auto;
+        width: 100%;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .mobile-menu-panel:not(.active) {
+        left: -100% !important;
+    }
+    
+    .mobile-menu-panel.active {
+        left: 0 !important;
+    }
+}
+
+/* ============ Hero Slider Mobile Fixes ============ */
+@media (max-width: 767px) {
+    /* Remove all top spacing from hero slider in mobile */
+    main {
+        padding-top: 0 !important;
+        margin-top: 0 !important;
+    }
+    
+    #homepage-sections {
+        padding-top: 0 !important;
+        margin-top: 0 !important;
+    }
+    
+    /* Remove spacing from scrolling-text (announcement bar) */
+    .scrolling-text,
+    .scrolling-text.homepage-section {
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
+        margin-top: 0 !important;
+    }
+    
+    /* Remove gap between scrolling-text and hero-slider */
+    .scrolling-text + .hero-slider,
+    .scrolling-text.homepage-section + .hero-slider {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+    
+    /* Ensure no spacing on homepage-section when it's scrolling-text */
+    #homepage-sections > .scrolling-text.homepage-section {
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
+    }
+    
+    /* Ensure no spacing on hero-slider when it follows scrolling-text */
+    #homepage-sections > .scrolling-text.homepage-section + .hero-slider {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+    
+    #homepage-sections > .hero-slider:first-child,
+    #homepage-sections > .hero-slider {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+    
+    .hero-carousel {
+        height: auto;
+        min-height: 300px;
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+    
+    .hero-carousel__slide {
+        min-height: 300px;
+        padding: 40px 15px;
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+    
+    .hero-slide__overlay {
+        padding: 20px !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+    }
+    
+    .hero-slide__overlay h1 {
+        font-size: 22px !important;
+        margin-bottom: 10px;
+    }
+    
+    .hero-slide__overlay p {
+        font-size: 14px;
+        margin-bottom: 15px;
+    }
+    
+    .hero-carousel__nav {
+        display: none !important;
+    }
+    
+    .hero-carousel__dots {
+        bottom: 10px;
+    }
+    
+    /* Also fix hero-slider class (different from hero-carousel) */
+    .hero-slider {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+        height: auto !important;
+    }
+    
+    .hero-slider-container {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+        height: auto !important;
+    }
+    
+    .hero-slide {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+        height: auto !important;
+    }
+    
+    .hero-slide img {
+        width: 100% !important;
+        height: auto !important;
+        object-fit: cover !important;
+        object-position: center !important;
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        vertical-align: top !important;
+    }
+}
+
+/* Mobile-specific fixes for max-width: 768px */
+@media (max-width: 768px) {
+    .hero-slider {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+        height: auto !important;
+    }
+    
+    .hero-slider-container {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+        height: auto !important;
+    }
+    
+    .hero-slide {
+        height: auto !important;
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+    
+    .hero-slide img {
+        width: 100% !important;
+        height: auto !important;
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        vertical-align: top !important;
+    }
+}
+
+/* Override min-height 380px rule from style.css for max-width 575px */
+@media (max-width: 575px) {
+    .hero-slide {
+        height: auto !important;
+        min-height: auto !important;
+    }
+    
+    .hero-slider {
+        height: auto !important;
+        min-height: auto !important;
+    }
+    
+    .hero-slider-container {
+        height: auto !important;
+        min-height: auto !important;
+    }
+    
+    .hero-slide img {
+        height: auto !important;
+        min-height: auto !important;
+    }
+}
+
+/* ============ Product Cards Mobile Fixes ============ */
+@media (max-width: 767px) {
+    /* Product grid */
+    .product-card,
+    .category-card,
+    .department-card {
+        margin-bottom: 15px;
+    }
+    
+    /* Product images */
+    .product-img,
+    .category-img,
+    .department-media {
+        height: 180px !important;
+        min-height: 180px !important;
+        max-height: 180px !important;
+    }
+    
+    /* Product info */
+    .product-info {
+        padding: 12px;
+    }
+    
+    .product-title {
+        font-size: 14px;
+        line-height: 1.4;
+        margin-bottom: 8px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .product-price {
+        font-size: 16px;
+        margin-bottom: 8px;
+    }
+    
+    .product-price .old-price {
+        font-size: 12px;
+    }
+    
+    /* Buttons */
+    .btn-add-cart,
+    .product-btn {
+        padding: 8px 16px;
+        font-size: 13px;
+        width: 100%;
+        margin-top: 8px;
+    }
+}
+
+/* ============ Section Headers Mobile Fixes ============ */
+@media (max-width: 767px) {
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .section-header h2 {
+        font-size: 20px !important;
+        margin-bottom: 0;
+    }
+    
+    .section-header .btn {
+        width: 100%;
+        text-align: center;
+        padding: 10px 20px;
+    }
+    
+    .eyebrow {
+        font-size: 11px;
+        letter-spacing: 2px;
+    }
+}
+
+/* ============ Value Props Mobile Fixes ============ */
+@media (max-width: 767px) {
+    .value-props {
+        padding: 30px 0 !important;
+    }
+    
+    .value-card {
+        padding: 18px;
+        margin-bottom: 15px;
+        text-align: center;
+    }
+    
+    .icon-wrapper {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+        margin: 0 auto 12px;
+    }
+    
+    .value-card h5 {
+        font-size: 15px;
+        margin-bottom: 8px;
+    }
+    
+    .value-card p {
+        font-size: 13px;
+    }
+}
+
+/* ============ Banners Mobile Fixes ============ */
+@media (max-width: 767px) {
+    .banner-container,
+    .banner-wrapper {
+        margin: 15px 0;
+        padding: 0 10px;
+    }
+    
+    .banner-item {
+        margin-bottom: 15px;
+    }
+    
+    .banner-item img,
+    .banner-item video {
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+    }
+    
+    /* Video banners */
+    .video-banner {
+        height: auto !important;
+        min-height: 200px;
+    }
+    
+    .video-banner video {
+        width: 100%;
+        height: auto;
+        max-height: 300px;
+    }
+}
+
+/* ============ Product Sections Mobile Fixes ============ */
+@media (max-width: 767px) {
+    /* Product carousel - Enhanced horizontal scrolling */
+    .product-carousel {
+        padding: 0;
+        overflow: visible;
+    }
+    
+    .product-carousel__wrapper {
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        padding: 0 15px;
+        margin: 0 -15px;
+    }
+    
+    .product-carousel__wrapper::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .product-carousel__track {
+        gap: 15px;
+        display: flex;
+        flex-wrap: nowrap;
+        padding: 10px 0;
+    }
+    
+    .product-carousel__slide {
+        min-width: calc(50% - 7.5px) !important;
+        max-width: calc(50% - 7.5px) !important;
+        flex: 0 0 calc(50% - 7.5px) !important;
+        scroll-snap-align: start;
+        scroll-snap-stop: always;
+    }
+    
+    /* Hide navigation arrows on mobile */
+    .product-carousel__nav {
+        display: none !important;
+    }
+    
+    /* Product Grids - Keep as grid layout (don't convert to horizontal scroll for products page) */
+    /* Only convert carousels to horizontal scroll, not product grids */
+    .row.has-product-cards,
+    .product-row-scroll {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        padding: 0 15px;
+        margin: 0 -15px;
+        gap: 15px;
+    }
+    
+    .row.has-product-cards::-webkit-scrollbar,
+    .product-row-scroll::-webkit-scrollbar {
+        display: none;
+    }
+    
+    /* Product cards in carousels - make them scrollable */
+    .row.has-product-cards > [class*="col-"],
+    .row.has-product-cards > [class*="col-"],
+    .product-row-scroll > [class*="col-"] {
+        flex: 0 0 calc(50% - 7.5px) !important;
+        max-width: calc(50% - 7.5px) !important;
+        min-width: calc(50% - 7.5px) !important;
+        scroll-snap-align: start;
+        scroll-snap-stop: always;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+    
+    /* Very small screens - show one product at a time with peek */
+    @media (max-width: 480px) {
+        .product-carousel__slide,
+    .row.has-product-cards > [class*="col-"],
+    .product-row-scroll > [class*="col-"] {
+        min-width: calc(85% - 10px) !important;
+        max-width: calc(85% - 10px) !important;
+        flex: 0 0 calc(85% - 10px) !important;
+    }
+    }
+    
+    /* Categories grid - keep vertical on mobile */
+    .categories-grid,
+    .departments-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        padding: 0 10px;
+    }
+}
+
+/* ============ Forms Mobile Fixes ============ */
+@media (max-width: 767px) {
+    .form-control,
+    .form-select {
+        font-size: 16px; /* Prevents zoom on iOS */
+        padding: 10px 12px;
+    }
+    
+    .form-label {
+        font-size: 14px;
+        margin-bottom: 6px;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        font-size: 14px;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    .btn-group {
+        width: 100%;
+    }
+    
+    .btn-group .btn {
+        flex: 1;
+    }
+}
+
+/* ============ Tables Mobile Fixes ============ */
+@media (max-width: 767px) {
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    table {
+        font-size: 13px;
+        min-width: 600px;
+    }
+    
+    table th,
+    table td {
+        padding: 8px 6px;
+        white-space: nowrap;
+    }
+    
+    /* Hide less important columns on mobile */
+    .table th:nth-child(n+4),
+    .table td:nth-child(n+4) {
+        display: none;
+    }
+}
+
+/* ============ Footer Mobile Fixes ============ */
+@media (max-width: 767px) {
+    .footer {
+        padding: 30px 0 20px;
+        text-align: center;
+    }
+    
+    .footer .row > div {
+        margin-bottom: 25px;
+    }
+    
+    .footer h5 {
+        font-size: 16px;
+        margin-bottom: 12px;
+    }
+    
+    .footer ul {
+        padding-left: 0;
+        list-style: none;
+    }
+    
+    .footer ul li {
+        margin-bottom: 8px;
+    }
+    
+    .footer a {
+        font-size: 13px;
+    }
+    
+    /* Payment Methods Image - Mobile */
+    .footer-payment-methods-img,
+    .footer-bottom img.footer-payment-methods-img {
+        max-height: 35px !important;
+        height: auto !important;
+        width: auto !important;
+        max-width: 100% !important;
+        object-fit: contain !important;
+        display: block !important;
+        margin: 10px auto 0 !important;
+    }
+}
+
+/* ============ Cart & Checkout Mobile Fixes ============ */
+@media (max-width: 767px) {
+    .cart-item {
+        flex-direction: column;
+        padding: 15px;
+    }
+    
+    .cart-item-img {
+        width: 100%;
+        max-width: 150px;
+        margin: 0 auto 15px;
+    }
+    
+    .cart-item-info {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .cart-item-actions {
+        width: 100%;
+        justify-content: center;
+        margin-top: 15px;
+    }
+    
+    .cart-summary {
+        margin-top: 20px;
+        padding: 15px;
+    }
+}
+
+/* ============ Product Detail Mobile Fixes ============ */
+@media (max-width: 767px) {
+    .product-detail {
+        padding: 15px 0;
+    }
+    
+    .product-detail-img {
+        margin-bottom: 20px;
+    }
+    
+    .product-detail-info h1 {
+        font-size: 22px;
+        margin-bottom: 15px;
+    }
+    
+    .product-detail-price {
+        font-size: 24px;
+        margin-bottom: 15px;
+    }
+    
+    .product-quantity {
+        width: 100%;
+        margin-bottom: 15px;
+    }
+    
+    .product-quantity input {
+        width: 100%;
+    }
+}
+
+/* ============ Admin Panel Mobile Fixes ============ */
+@media (max-width: 991px) {
+    .admin-container {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+    }
+    
+    .sidebar-menu {
+        display: flex;
+        flex-wrap: wrap;
+        padding: 10px;
+    }
+    
+    .sidebar-menu li {
+        flex: 1 1 auto;
+        min-width: 120px;
+    }
+    
+    .content-area {
+        width: 100%;
+        padding: 15px;
+    }
+    
+    .table-responsive {
+        font-size: 12px;
+    }
+    
+    .modal-dialog {
+        margin: 10px;
+        max-width: calc(100% - 20px);
+    }
+}
+
+/* ============ Utility Classes for Mobile ============ */
+@media (max-width: 767px) {
+    .d-mobile-none {
+        display: none !important;
+    }
+    
+    .d-mobile-block {
+        display: block !important;
+    }
+    
+    .text-mobile-center {
+        text-align: center !important;
+    }
+    
+    .mb-mobile-3 {
+        margin-bottom: 1rem !important;
+    }
+    
+    .px-mobile-2 {
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+    }
+}
+
+/* ============ Very Small Screens (320px - 480px) ============ */
+@media (max-width: 480px) {
+    .container {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+    
+    h1, .h1 {
+        font-size: 24px !important;
+    }
+    
+    h2, .h2 {
+        font-size: 20px !important;
+    }
+    
+    .product-carousel__slide {
+        min-width: calc(85% - 10px) !important;
+        max-width: calc(85% - 10px) !important;
+        flex: 0 0 calc(85% - 10px) !important;
+    }
+    
+    .row.has-product-cards > [class*="col-"],
+    .product-row-scroll > [class*="col-"] {
+        min-width: calc(85% - 10px) !important;
+        max-width: calc(85% - 10px) !important;
+        flex: 0 0 calc(85% - 10px) !important;
+    }
+    
+    .categories-grid,
+    .departments-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .btn {
+        padding: 12px 16px;
+        font-size: 13px;
+    }
+    
+    .search-box input {
+        font-size: 16px; /* Prevents iOS zoom */
+    }
+}
+
+/* ============ Fix Overflow Issues ============ */
+@media (max-width: 991px) {
+    * {
+        max-width: 100%;
+    }
+    
+    img,
+    video,
+    iframe {
+        max-width: 100%;
+        height: auto;
+    }
+    
+    /* Product rows - special handling for horizontal scroll */
+    .row:not(.has-product-cards) {
+        margin-left: -10px;
+        margin-right: -10px;
+    }
+    
+    .row:not(.has-product-cards) > * {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+    
+    /* Prevent product rows from causing page scroll */
+    .row.has-product-cards,
+    .product-row-scroll {
+        margin-left: 0;
+        margin-right: 0;
+        overflow: visible;
+    }
+}
+
+/* ============ Remove Empty Spaces in Sections - Mobile First ============ */
+@media (max-width: 767px) {
+    /* Remove all top and bottom padding/margins from containers in sections */
+    .homepage-section .container,
+    .homepage-section .container-fluid,
+    section .container,
+    section .container-fluid {
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+    }
+    
+    /* Remove padding from all homepage sections */
+    .homepage-section {
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+    }
+    
+    /* Remove padding from specific section types */
+    .product-carousel,
+    .product-section,
+    .top-selling,
+    .new-arrivals,
+    .category-featured,
+    .category-grid,
+    .category-circles,
+    .department-grid,
+    .brand-marquee-carousel,
+    .brand-grid,
+    .featured-collections,
+    .subcategory-grid,
+    .product-tabs,
+    .newsletter-social,
+    .banner-full-width,
+    .video-banner {
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+    }
+    
+    /* Remove padding from section headers */
+    .section-header {
+        margin-top: 0 !important;
+        margin-bottom: 15px !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+    }
+    
+    /* Remove Bootstrap utility padding classes on mobile */
+    .py-1, .py-2, .py-3, .py-4, .py-5,
+    .pt-1, .pt-2, .pt-3, .pt-4, .pt-5,
+    .pb-1, .pb-2, .pb-3, .pb-4, .pb-5 {
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+    }
+    
+    /* Remove margins from Bootstrap utility classes */
+    .my-1, .my-2, .my-3, .my-4, .my-5,
+    .mt-1, .mt-2, .mt-3, .mt-4, .mt-5,
+    .mb-1, .mb-2, .mb-3, .mb-4, .mb-5 {
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+    }
+    
+    /* Keep minimal spacing only for content inside containers */
+    .homepage-section .container > *:first-child,
+    .homepage-section .container-fluid > *:first-child {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+    
+    .homepage-section .container > *:last-child,
+    .homepage-section .container-fluid > *:last-child {
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
+    }
+    
+    /* Add minimal spacing between sections only */
+    .homepage-section + .homepage-section {
+        margin-top: 10px !important;
+    }
+}
+
+/* ============ Touch-Friendly Sizes ============ */
+@media (max-width: 991px) {
+    /* Minimum touch target size: 44x44px */
+    a,
+    button,
+    .btn,
+    input[type="button"],
+    input[type="submit"] {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    /* Increase spacing between clickable elements */
+    .nav-link,
+    .menu-item {
+        padding: 12px 15px;
+    }
+}
+
+/* ============ Prevent Text Selection Issues ============ */
+@media (max-width: 991px) {
+    .btn,
+    .nav-link,
+    .menu-item {
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+    }
+}
+
+/* ============ Fix Horizontal Scroll ============ */
+@media (max-width: 991px) {
+    /* CRITICAL: html must have height: auto to allow scrolling */
+    html {
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        height: auto !important; /* Changed from 100% to auto - CRITICAL FIX */
+        min-height: 100% !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    
+    /* CRITICAL: body must have height: auto and overflow-y: auto */
+    body {
+        position: relative !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important; /* Allow vertical scrolling */
+        /* Allow natural scroll bounce but prevent horizontal */
+        overscroll-behavior-y: auto !important; /* Changed from none to allow scrolling */
+        overscroll-behavior-x: none !important;
+        /* Improve touch performance */
+        -webkit-overflow-scrolling: touch !important;
+        touch-action: pan-y pinch-zoom !important; /* Allow vertical panning */
+        height: auto !important; /* CRITICAL: Must be auto, not 100vh */
+        min-height: 100vh !important;
+    }
+    
+    /* Prevent touch delays */
+    button, a, input, select, textarea {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    .container-fluid {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    /* Allow horizontal scroll ONLY for product containers */
+    /* Use CSS touch-action to handle scroll direction without JS */
+    .product-carousel__wrapper,
+    .brand-marquee-carousel__wrapper,
+    .row.has-product-cards,
+    .product-row-scroll {
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        /* CSS handles horizontal scroll direction - no JS needed */
+        touch-action: pan-x pinch-zoom;
+        overscroll-behavior-x: contain;
+        overscroll-behavior-y: none;
+        /* Performance hint for better scrolling */
+        will-change: scroll-position;
+    }
+    
+    /* Product grids should NOT have horizontal scroll - use grid layout */
+    /* Override Bootstrap row class for product grids */
+    #productsGrid,
+    .products-grid,
+    #productsGrid.row,
+    .products-grid.row {
+        overflow: visible !important;
+        overflow-x: visible !important;
+        overflow-y: visible !important;
+        display: grid !important; /* Force grid, override Bootstrap flex */
+        flex-direction: unset !important; /* Remove flex direction */
+    }
+    
+    /* Prevent other elements from causing horizontal scroll */
+    main,
+    section,
+    .container,
+    .container-fluid {
+        overflow-x: hidden;
+        overscroll-behavior-x: none;
+    }
+    
+    /* Ensure body and html can scroll naturally on mobile - CRITICAL FIX */
+    /* REMOVED DUPLICATE - Already defined above */
+    
+    /* Override menu-open classes that might prevent scrolling */
+    body.menu-open:not(.filter-sidebar-open),
+    body.filter-sidebar-open:not(.menu-open) {
+        /* Only prevent scroll when menu/filter is actually open */
+        overflow: hidden !important;
+        position: fixed !important;
+    }
+    
+    /* When neither menu nor filter is open, ensure scrolling works */
+    body:not(.menu-open):not(.filter-sidebar-open) {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        position: relative !important;
+        height: auto !important;
+    }
+    
+    /* Main content should NOT create scroll container - let body scroll */
+    main,
+    .main-content {
+        overflow-y: visible !important; /* Changed from auto - let body scroll */
+        overflow-x: hidden !important;
+        position: relative !important;
+        height: auto !important;
+        min-height: auto !important; /* Changed from 100vh */
+        -webkit-overflow-scrolling: touch !important;
+        /* Ensure main doesn't block body scroll */
+        max-height: none !important;
+    }
+    
+    /* Ensure products listing container doesn't interfere with scrolling */
+    .products-listing-container {
+        overflow-y: visible !important;
+        overflow-x: hidden !important;
+        position: relative !important;
+        height: auto !important;
+        min-height: auto !important;
+        max-height: none !important;
+    }
+    
+    /* Container fluid should not prevent scrolling */
+    .container-fluid {
+        overflow-y: visible !important;
+        overflow-x: hidden !important;
+        height: auto !important;
+        max-height: none !important;
+    }
+    
+    /* Ensure header doesn't block scrolling */
+    .header-container {
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 1000 !important;
+        /* Don't use fixed position on mobile */
+    }
+    
+    /* Ensure mobile bottom nav doesn't interfere with scroll */
+    .mobile-bottom-nav {
+        position: fixed !important;
+        bottom: 0 !important;
+        z-index: 999 !important;
+        /* Add padding to body to account for bottom nav */
+    }
+    
+    /* Add padding to main content to prevent content from being hidden behind bottom nav */
+    main,
+    .main-content {
+        padding-bottom: 80px !important; /* Space for mobile bottom nav */
+    }
+}
+

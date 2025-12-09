@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>Shop Section - Mobile Scrolling Fix</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Shop Section Mobile CSS -->
+    <link rel="stylesheet" href="/css/shop-section-mobile.css?v=1">
+    
+    <style>
+        /* Base reset for mobile scrolling */
+        * {
+            box-sizing: border-box;
+        }
+        
+        html {
+            overflow-x: hidden !important;
+            overflow-y: auto !important;
+            height: auto !important;
+            min-height: 100% !important;
+            -webkit-overflow-scrolling: touch !important;
+        }
+        
+        body {
+            overflow-x: hidden !important;
+            overflow-y: auto !important;
+            height: auto !important;
+            min-height: 100vh !important;
+            position: relative !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            -webkit-overflow-scrolling: touch !important;
+        }
+        
+        /* Demo wrapper - remove in production */
+        .demo-wrapper {
+            padding: 20px 10px;
+            max-width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <!-- DEMO WRAPPER - Remove this div when integrating -->
+    <div class="demo-wrapper">
+        
+        <!-- Products Area - Shop Section -->
+        <div class="products-area overflow-visible position-relative">
+            <!-- Products Top Bar -->
+            <div class="products-top-bar">
+                <div class="products-count">
+                    <span id="productsCount">16 products</span>
+                </div>
+                <div class="zoom-filter">
+                    <button type="button" class="zoom-btn active" data-view="grid" title="Grid View">
+                        <i class="fas fa-th"></i>
+                    </button>
+                    <button type="button" class="zoom-btn" data-view="grid-2" title="2 Columns">
+                        <i class="fas fa-th-large"></i>
+                    </button>
+                    <button type="button" class="zoom-btn" data-view="grid-3" title="3 Columns">
+                        <i class="fas fa-th-list"></i>
+                    </button>
+                    <button type="button" class="zoom-btn" data-view="list" title="List View">
+                        <i class="fas fa-list"></i>
+                    </button>
+                </div>
+                <div class="sort-by-wrapper">
+                    <label for="sortBy">Sort By:</label>
+                    <select id="sortBy" class="form-select form-select-sm">
+                        <option value="name">Name (A-Z)</option>
+                        <option value="-name">Name (Z-A)</option>
+                        <option value="price">Price (Low to High)</option>
+                        <option value="-price">Price (High to Low)</option>
+                        <option value="-createdAt">Newest First</option>
+                        <option value="createdAt">Oldest First</option>
+                    </select>
+                </div>
+                <!-- Mobile Filter Toggle Button -->
+                <button type="button" class="filter-toggle-btn" id="filterToggleBtn">
+                    <i class="fas fa-filter"></i> Filters
+                </button>
+            </div>
+
+            <!-- Products Grid -->
+            <div id="productsGrid" class="products-grid view-grid overflow-visible">
+                <!-- Sample Products - Replace with dynamic content -->
+                <div class="product-card">
+                    <a href="#" style="position: relative; display: block;">
+                        <img src="https://via.placeholder.com/300x300" alt="Product" class="product-card-image" style="width: 100%; height: auto; aspect-ratio: 1/1; object-fit: cover;">
+                    </a>
+                    <div class="product-card-info" style="padding: 12px;">
+                        <small class="text-muted d-block mb-1" style="font-size: 12px;">Category • Department</small>
+                        <a href="#" style="text-decoration: none; color: inherit;">
+                            <h3 class="product-card-title" style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Product Name 1</h3>
+                        </a>
+                        <div class="product-card-price" style="font-size: 16px; font-weight: 700; color: #c42525; margin-bottom: 10px;">
+                            Rs. 1,299.00
+                        </div>
+                        <button class="product-card-button add-to-cart" style="width: 100%; padding: 10px; background: #ffc0cb; color: #333; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer;">
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Repeat product cards for testing scroll -->
+                <div class="product-card">
+                    <a href="#" style="position: relative; display: block;">
+                        <img src="https://via.placeholder.com/300x300" alt="Product" class="product-card-image" style="width: 100%; height: auto; aspect-ratio: 1/1; object-fit: cover;">
+                    </a>
+                    <div class="product-card-info" style="padding: 12px;">
+                        <small class="text-muted d-block mb-1" style="font-size: 12px;">Category • Department</small>
+                        <a href="#" style="text-decoration: none; color: inherit;">
+                            <h3 class="product-card-title" style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Product Name 2</h3>
+                        </a>
+                        <div class="product-card-price" style="font-size: 16px; font-weight: 700; color: #c42525; margin-bottom: 10px;">
+                            Rs. 1,499.00
+                        </div>
+                        <button class="product-card-button add-to-cart" style="width: 100%; padding: 10px; background: #ffc0cb; color: #333; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer;">
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Add more products here for testing scroll -->
+                <div class="product-card">
+                    <a href="#" style="position: relative; display: block;">
+                        <img src="https://via.placeholder.com/300x300" alt="Product" class="product-card-image" style="width: 100%; height: auto; aspect-ratio: 1/1; object-fit: cover;">
+                    </a>
+                    <div class="product-card-info" style="padding: 12px;">
+                        <small class="text-muted d-block mb-1" style="font-size: 12px;">Category • Department</small>
+                        <a href="#" style="text-decoration: none; color: inherit;">
+                            <h3 class="product-card-title" style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Product Name 3</h3>
+                        </a>
+                        <div class="product-card-price" style="font-size: 16px; font-weight: 700; color: #c42525; margin-bottom: 10px;">
+                            Rs. 999.00
+                        </div>
+                        <button class="product-card-button add-to-cart" style="width: 100%; padding: 10px; background: #ffc0cb; color: #333; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer;">
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Add 13 more products to reach 16 total for testing -->
+                <!-- (In production, these will be loaded dynamically via JavaScript) -->
+            </div>
+
+            <!-- Pagination -->
+            <nav aria-label="Products pagination" class="mt-4">
+                <ul id="pagination" class="pagination justify-content-center">
+                    <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                    <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                </ul>
+            </nav>
+        </div>
+        
+    </div>
+    <!-- END DEMO WRAPPER -->
+    
+    <!-- jQuery and Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Ensure scrolling works
+        document.addEventListener('DOMContentLoaded', function() {
+            // Force html and body to allow scrolling
+            document.documentElement.style.overflowY = 'auto';
+            document.documentElement.style.height = 'auto';
+            document.body.style.overflowY = 'auto';
+            document.body.style.height = 'auto';
+            document.body.style.position = 'relative';
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,158 @@
+/* Fix for search bar and navigation elements */
+
+/* Desktop styles (992px and up) */
+@media (min-width: 992px) {
+    /* Hide cart icon next to logo on desktop */
+    .logo-wrapper > #cartIcon,
+    .logo-wrapper > a[href*="cart"],
+    .logo-wrapper .header-icon[title="Cart"] {
+        display: none !important;
+        visibility: hidden !important;
+    }
+    
+    /* Desktop dropdown menu styles */
+    .nav-item.has-children,
+    .menu-item.has-children {
+        position: relative;
+    }
+    
+    .nav-item.has-children > .dropdown-menu,
+    .menu-item.has-children > .dropdown-menu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        z-index: 1000;
+        display: none;
+        min-width: 200px;
+        padding: 10px 0;
+        margin: 0;
+        list-style: none;
+        background-color: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .nav-item.has-children:hover > .dropdown-menu,
+    .menu-item.has-children:hover > .dropdown-menu,
+    .nav-item.has-children.expanded > .dropdown-menu,
+    .menu-item.has-children.expanded > .dropdown-menu {
+        display: block;
+    }
+    
+    .dropdown-menu > li > a {
+        display: block;
+        padding: 8px 20px;
+        clear: both;
+        font-weight: normal;
+        line-height: 1.5;
+        color: #333;
+        white-space: nowrap;
+        text-decoration: none;
+    }
+    
+    .dropdown-menu > li > a:hover,
+    .dropdown-menu > li > a:focus {
+        background-color: #f5f5f5;
+        color: #262626;
+        text-decoration: none;
+    }
+    /* Hide category nav search on desktop */
+    .category-nav .category-nav-search,
+    nav.category-nav .category-nav-search,
+    .header-container .category-nav .category-nav-search,
+    .category-nav-search {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        height: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+    }
+    /* Hide mobile search popup */
+    #search_pupop {
+        display: none !important;
+    }
+    
+    /* Hide mobile search button in bottom nav and category menu search */
+    .mobile-bottom-nav a[data-id="#search_pupop"],
+    /* Hide the category nav search bar and its container on desktop */
+    .category-nav-search,
+    #categoryMenuSearch {
+        display: none !important;
+    }
+    
+    /* Hide mobile bottom nav on desktop */
+    .mobile-bottom-nav {
+        display: none !important;
+    }
+    
+    /* Hide mobile category nav close button */
+    .category-nav-close {
+        display: none !important;
+    }
+    
+    /* Ensure category nav is visible */
+    .category-nav {
+        display: block !important;
+    }
+    
+    /* Make sure header search is visible */
+    .header-search {
+        display: block !important;
+    }
+}
+
+/* Mobile styles */
+@media (max-width: 991px) {
+    /* Show mobile bottom nav only on mobile */
+    .mobile-bottom-nav {
+        display: flex;
+    }
+    
+    /* Show close button in mobile menu */
+    .category-nav-close {
+        display: block;
+    }
+    
+    /* Mobile dropdown menu styles */
+    .mobile-menu-list .has-children,
+    .mobile-menu-list .menu-item-has-children,
+    .mobile-menu-list .nav-item.has-children {
+        position: relative;
+    }
+    
+    .mobile-menu-list .dropdown-menu {
+        display: none;
+        padding-left: 15px;
+        margin: 0;
+        list-style: none;
+    }
+    
+    .mobile-menu-list .expanded > .dropdown-menu {
+        display: block;
+    }
+    
+    .mobile-menu-list .has-children > a,
+    .mobile-menu-list .menu-item-has-children > a,
+    .mobile-menu-list .nav-item.has-children > a {
+        position: relative;
+        padding-right: 30px;
+    }
+    
+    .mobile-menu-list .has-children > a:after,
+    .mobile-menu-list .menu-item-has-children > a:after,
+    .mobile-menu-list .nav-item.has-children > a:after {
+        content: '+';
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 16px;
+    }
+    
+    .mobile-menu-list .expanded > a:after {
+        content: '-';
+    }
+}

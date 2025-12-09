@@ -1,0 +1,1234 @@
+/* ============================================
+   HEADER + NAVBAR STYLES - Mobile First
+   ============================================ */
+
+/* Prevent body scroll when menu is open - Better than inline styles */
+body.menu-open,
+body.filter-sidebar-open {
+    overflow: hidden !important;
+    position: fixed !important;
+    width: 100% !important;
+    height: 100% !important;
+    touch-action: none;
+}
+
+/* Ensure body is scrollable by default */
+body {
+    overflow-x: hidden;
+    overflow-y: auto !important; /* Force scrolling enabled */
+    position: relative !important; /* Don't use fixed by default */
+    width: 100%;
+    height: auto !important; /* Allow content to extend */
+    min-height: 100vh;
+    -webkit-overflow-scrolling: touch; /* Smooth iOS scrolling */
+}
+
+/* Mobile: Ensure body can scroll naturally */
+@media (max-width: 991px) {
+    body {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        position: relative !important;
+        height: auto !important;
+        min-height: 100vh !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    
+    /* Only prevent scroll when menu/filter is actually open */
+    body.menu-open:not(.filter-sidebar-open),
+    body.filter-sidebar-open:not(.menu-open),
+    body.menu-open.filter-sidebar-open {
+        overflow: hidden !important;
+        position: fixed !important;
+        width: 100% !important;
+        height: 100% !important;
+        touch-action: none;
+    }
+    
+    /* When menus are closed, ensure scrolling works */
+    body:not(.menu-open):not(.filter-sidebar-open) {
+        overflow-y: auto !important;
+        position: relative !important;
+        height: auto !important;
+        touch-action: pan-y pinch-zoom;
+    }
+}
+
+/* Improve touch responsiveness */
+* {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+}
+
+button, a {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Announcement Bar Container (at top, above header) - MUST be at very top */
+body > #announcement-bar-container {
+    width: 100% !important;
+    position: relative !important;
+    z-index: 1001 !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    order: -1 !important; /* Ensure it appears first */
+}
+
+/* Ensure announcement bar is always before header in DOM order */
+#announcement-bar-container {
+    width: 100% !important;
+    position: relative !important;
+    z-index: 1001 !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    clear: both !important;
+}
+
+/* Force announcement bar to be first element after body - override any other styles */
+body > #announcement-bar-container:first-of-type {
+    order: -999 !important;
+    position: relative !important;
+}
+
+/* Ensure announcement bar content is visible and properly styled - match Announcement Bar-2 size */
+#announcement-bar-container .scrolling-text {
+    margin: 0 !important;
+    padding: 10px 0 !important; /* Match mobile padding from Announcement Bar-2 */
+    width: 100%;
+}
+
+/* Match responsive padding sizes for top announcement bar */
+@media (min-width: 768px) {
+    #announcement-bar-container .scrolling-text {
+        padding: 12px 0 !important; /* Match tablet padding */
+    }
+}
+
+@media (min-width: 992px) {
+    #announcement-bar-container .scrolling-text {
+        padding: 15px 0 !important; /* Match desktop padding */
+    }
+}
+
+/* Header Container */
+.header-container {
+    width: 100%;
+    display: block;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    order: 0; /* Ensure header comes after announcement bar */
+}
+
+/* Search Bar - Hidden, moved to header-main */
+.header-search {
+    display: none;
+}
+
+.header-search .search-form {
+    position: relative;
+}
+
+.header-search .search-input-wrapper {
+    position: relative;
+}
+
+.header-search .search-form input {
+    width: 100%;
+    padding: 12px 50px 12px 20px;
+    border: 1px solid #e5e5e5;
+    border-radius: 30px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.header-search .search-form input:focus {
+    border-color: #d92128;
+}
+
+.header-search .search-form button {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #d92128;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 10px 15px;
+    z-index: 1;
+}
+
+.header-search .search-form button:hover {
+    color: #c42525;
+}
+
+/* Search Results Dropdown */
+.search-results-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    max-height: 400px;
+    overflow-y: auto;
+    z-index: 1001;
+    display: none;
+    margin-top: 8px;
+}
+
+.search-results-dropdown.active {
+    display: block;
+}
+
+.search-result-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    transition: background 0.2s;
+    text-decoration: none;
+    color: inherit;
+}
+
+.search-result-item:hover {
+    background: #f5f5f5;
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+.search-result-item img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    margin-right: 12px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.search-result-item-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.search-result-item-name {
+    font-weight: 500;
+    margin-bottom: 4px;
+    color: #333;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.search-result-item-price {
+    color: #d92128;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.search-result-item-price .original-price {
+    text-decoration: line-through;
+    color: #999;
+    margin-left: 8px;
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.search-loading,
+.search-error,
+.search-no-results {
+    padding: 20px 16px;
+    text-align: center;
+    color: #666666;
+    font-size: 14px;
+}
+
+.search-error {
+    color: #d93939;
+}
+
+/* Header Main (Search + Logo + Icons) */
+.header-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: #d92128;
+    gap: 15px;
+    border-bottom: 2px solid white;
+    position: relative;
+}
+
+/* Search Bar inside header-main (left corner) - Hidden on mobile */
+.header-main .header-search {
+    display: block;
+    width: auto;
+    min-width: 200px;
+    max-width: 300px;
+    margin: 0;
+    padding: 0;
+    position: relative;
+    flex-shrink: 0;
+    order: 1;
+}
+
+/* Hide search on mobile - higher specificity */
+@media (max-width: 991px) {
+    .header-main .header-search,
+    .header-main > .header-search {
+        display: none !important;
+        visibility: hidden !important;
+        width: 0 !important;
+        height: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: hidden !important;
+    }
+}
+
+.header-main .header-search .search-form {
+    position: relative;
+}
+
+.header-main .header-search .search-input-wrapper {
+    position: relative;
+}
+
+.header-main .header-search .search-form input {
+    width: 100%;
+    padding: 8px 40px 8px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+    background: rgba(255, 255, 255, 0.95);
+    color: #333;
+}
+
+.header-main .header-search .search-form input::placeholder {
+    color: #999;
+}
+
+.header-main .header-search .search-form input:focus {
+    border-color: rgba(255, 255, 255, 0.6);
+    background: white;
+}
+
+.header-main .header-search .search-form button {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #d92128;
+    border: none;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 6px 10px;
+    z-index: 1;
+    border-radius: 15px;
+    transition: background 0.2s;
+}
+
+.header-main .header-search .search-form button:hover {
+    background: #c42525;
+}
+
+.logo-wrapper {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    order: 2;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.logo-wrapper a {
+    display: inline-block;
+    text-decoration: none;
+}
+
+.header-logo {
+    max-height: 50px;
+    width: auto;
+    display: block;
+}
+
+.logo-text {
+    font-size: 20px;
+    font-weight: bold;
+    color: #d92128;
+}
+
+/* Header Icons */
+.header-icons {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    order: 3;
+    flex-shrink: 0;
+}
+
+.header-icon {
+    font-size: 22px;
+    position: relative;
+    line-height: 1;
+    display: flex;
+    color: white;
+    justify-content: center;
+    align-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 100%;
+    transition: all 0.24s linear;
+    text-decoration: none;
+    border: 2px solid white;
+    background-color: transparent;
+}
+
+.header-icon:hover {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: white;
+}
+
+.header-icon .icon,
+.header-icon i {
+    color: inherit;
+}
+
+.header-icon .icon {
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.header-icon .icon i {
+    display: block;
+    font-size: 20px;
+}
+
+.header-icon .header__counter {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    font-size: 11px;
+    color: #ffffff;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    background: #1979c3;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    border: 1px solid #ffffff;
+    z-index: 10;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Category Navbar - Mobile First */
+.category-nav {
+    background: #d92128;
+    width: 100%;
+    display: block;
+    position: relative;
+    /* Desktop: No scrolling, visible overflow */
+    overflow-x: visible;
+    overflow-y: hidden;
+    /* Prevent vertical scroll */
+    overscroll-behavior-x: contain;
+    overscroll-behavior-y: none;
+    max-width: 100%;
+}
+
+/* Hide scrollbar on desktop */
+.category-nav::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+.category-nav::-webkit-scrollbar-track {
+    display: none;
+}
+
+.category-nav::-webkit-scrollbar-thumb {
+    display: none;
+}
+
+/* Mobile Menu Toggle Button - Hidden on desktop by default */
+.category-nav-toggle {
+    display: none !important;
+    background: transparent;
+    border: 2px solid white;
+    border-radius: 4px;
+    color: white;
+    padding: 8px 12px;
+    cursor: pointer;
+    width: auto;
+    min-width: auto; /* No min-width since text is hidden */
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.2s;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.category-nav-toggle:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.toggle-icon {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 20px;
+    height: 16px;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.toggle-line {
+    display: block;
+    width: 100%;
+    height: 2px;
+    background: white;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+.category-nav-toggle.active .toggle-line:nth-child(1) {
+    transform: rotate(45deg) translate(6px, 6px);
+}
+
+.category-nav-toggle.active .toggle-line:nth-child(2) {
+    opacity: 0;
+}
+
+.category-nav-toggle.active .toggle-line:nth-child(3) {
+    transform: rotate(-45deg) translate(6px, -6px);
+}
+
+.toggle-text {
+    display: none !important; /* Hide menu text, keep only icon */
+    flex: 1;
+}
+
+/* Desktop: Remove scrolling, show all items normally */
+@media (min-width: 768px) {
+    .category-nav {
+        overflow-x: visible !important;
+        overflow-y: visible !important;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    
+    .category-nav::-webkit-scrollbar {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+    }
+    
+    .category-menu {
+        flex-wrap: wrap;
+        justify-content: center;
+        min-width: auto;
+        width: 100%;
+        overflow-x: visible !important;
+    }
+    
+    /* Hide toggle button on desktop */
+    .category-nav-toggle {
+        display: none !important;
+    }
+}
+
+/* Hide mobile-only elements on desktop */
+@media (min-width: 768px) {
+    .category-nav-close,
+    .category-nav-search,
+    .category-nav-search-results {
+        display: none !important;
+    }
+}
+
+/* Mobile: Enable horizontal scrolling */
+@media (max-width: 767px) {
+    .category-nav {
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
+        touch-action: pan-x pinch-zoom;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    
+    .category-nav::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .category-menu {
+        flex-wrap: nowrap !important;
+        min-width: max-content !important;
+        width: max-content !important;
+    }
+}
+
+.category-menu {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    /* Critical: Force menu to be wider than container to enable scroll */
+    min-width: max-content;
+    width: max-content;
+    /* Prevent wrapping */
+    white-space: nowrap;
+}
+
+.category-menu > li {
+    display: inline-block;
+    padding: 12px 18px;
+    color: white;
+    position: relative;
+    white-space: nowrap;
+    /* Critical: Prevent items from shrinking */
+    flex-shrink: 0;
+    flex-grow: 0;
+    /* Ensure items don't wrap */
+    min-width: max-content;
+}
+
+.category-menu > li > a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: opacity 0.2s;
+}
+
+.category-menu > li > a:hover {
+    opacity: 0.9;
+}
+
+.category-menu > li.has-dropdown > a::after {
+    content: '\f107';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    font-size: 12px;
+    margin-left: auto;
+    color: #999;
+    display: inline-block;
+    vertical-align: middle;
+    transition: transform 0.3s;
+}
+
+.category-menu > li.dropdown-open > a::after {
+    transform: rotate(180deg);
+}
+
+@media (max-width: 767px) {
+    .category-menu > li.has-dropdown > a::after {
+        color: #999;
+    }
+}
+
+/* Category Dropdown Menu */
+.category-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: white;
+    min-width: 200px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+    padding: 8px 0;
+    z-index: 1002;
+    display: none;
+    margin-top: 4px;
+}
+
+.category-menu > li:hover > .category-dropdown,
+.category-menu > li.dropdown-open > .category-dropdown {
+    display: block;
+}
+
+.category-dropdown li {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.category-dropdown a {
+    display: block;
+    padding: 10px 18px;
+    color: #333;
+    text-decoration: none;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+
+.category-dropdown a:hover {
+    background: #f5f5f5;
+    color: #d92128;
+}
+
+/* Mobile Styles */
+@media (max-width: 991px) {
+    .header-main {
+        padding: 8px 10px;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        align-items: center;
+    }
+    
+    /* Hide search field on mobile */
+    .header-main .header-search {
+        display: none !important;
+    }
+    
+    /* Logo and menu button on same row - Logo centered with cart next to it */
+    .logo-wrapper {
+        order: 2;
+        flex: 1;
+        text-align: center;
+        position: static;
+        transform: none;
+        left: auto;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+    
+    /* Header icons - menu button on left */
+    .header-icons {
+        order: 1;
+        gap: 0;
+        width: auto;
+        justify-content: flex-start;
+        flex-basis: auto;
+        margin-right: 10px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        flex: 0 0 auto;
+    }
+    
+    /* Hide all header icons except menu button on mobile */
+    .header-icons .header-icon:not(#cartIcon) {
+        display: none !important;
+        visibility: hidden !important;
+        width: 0 !important;
+        height: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: hidden !important;
+    }
+    
+    /* Show menu button on left */
+    .header-icons .category-nav-toggle {
+        display: flex !important;
+        margin: 0;
+        order: 1;
+        visibility: visible !important;
+        margin-right: 10px;
+        padding: 8px 12px !important; /* Adjust padding since text is hidden */
+        min-width: auto !important; /* Remove min-width since no text */
+    }
+    
+    .header-icons .category-nav-toggle .toggle-text {
+        display: none !important; /* Hide menu text on mobile */
+    }
+    
+    /* Show cart button next to logo (inside logo-wrapper) */
+    .logo-wrapper .header-icon#cartIcon {
+        display: flex !important;
+        order: 2;
+        visibility: visible !important;
+        width: 40px !important;
+        height: 40px !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        flex-shrink: 0;
+        margin-left: 10px;
+    }
+    
+    /* Hide cart from header-icons on mobile */
+    .header-icons .header-icon#cartIcon,
+    .header-icons .header-icon#cartIconDesktop {
+        display: none !important;
+    }
+    
+    .logo-wrapper .header-icon#cartIcon .icon {
+        font-size: 20px;
+    }
+    
+    .logo-wrapper .header-icon#cartIcon .header__counter {
+        display: block;
+    }
+    
+    .header-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 18px;
+    }
+    
+    .header-icon .icon {
+        font-size: 18px;
+    }
+    
+    .category-menu > li {
+        padding: 10px 14px;
+    }
+    
+    .category-menu > li > a {
+        font-size: 13px;
+    }
+    
+    /* Mobile: Dropdown opens on tap, not hover */
+    .category-menu > li:hover > .category-dropdown {
+        display: none;
+    }
+    
+    .category-menu > li.dropdown-open > .category-dropdown {
+        display: block;
+    }
+}
+
+@media (max-width: 767px) {
+    .header-logo {
+        max-height: 40px;
+    }
+    
+    .logo-text {
+        font-size: 18px;
+    }
+    
+    /* Mobile: Show toggle button in header-icons, hide from navbar */
+    .category-nav .category-nav-toggle {
+        display: none !important;
+    }
+    
+    .header-icons .category-nav-toggle {
+        display: flex !important;
+        padding: 8px 12px !important; /* Adjust padding since text is hidden */
+        min-width: auto !important; /* Remove min-width since no text */
+    }
+    
+    .header-icons .category-nav-toggle .toggle-text {
+        display: none !important; /* Hide menu text on mobile */
+    }
+    
+    /* Ensure menu button is visible and positioned correctly */
+    .header-icons {
+        order: 1;
+        justify-content: flex-start;
+    }
+    
+    /* Hide all other icons on mobile */
+    .header-icons .header-icon {
+        display: none !important;
+    }
+    
+    /* Horizontal slide-in menu on mobile - Match reference design */
+    .category-nav {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 85%;
+        max-width: 350px;
+        height: 100vh;
+        background: #d92128;
+        z-index: 1002;
+        transition: left 0.3s ease-out;
+        overflow-y: auto;
+        overflow-x: hidden;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        /* Hide scrollbar but allow scrolling */
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    
+    .category-nav::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
+    }
+    
+    .category-nav.menu-open {
+        left: 0;
+    }
+    
+    .category-menu {
+        display: flex !important;
+        flex-direction: column;
+        width: 100%;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+        overflow: visible;
+        flex: 1;
+        align-items: stretch;
+        min-height: 0;
+    }
+    
+    /* Overlay when menu is open */
+    .category-nav-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1001;
+        opacity: 0;
+        transition: opacity 0.3s ease-out;
+    }
+    
+    .category-nav-overlay.active {
+        display: block;
+        opacity: 1;
+    }
+    
+    .category-menu > li {
+        width: 100% !important;
+        padding: 0;
+        border-bottom: 1px dashed rgba(255, 255, 255, 0.2);
+        display: block !important;
+        flex-shrink: 0;
+        margin: 0;
+    }
+    
+    .category-menu > li:first-child {
+        border-top: none;
+    }
+    
+    .category-menu > li:last-child {
+        border-bottom: 1px dashed rgba(255, 255, 255, 0.2);
+    }
+    
+    .category-menu > li > a {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 15px;
+        padding: 16px 20px;
+        color: white;
+        font-weight: 500;
+        text-decoration: none;
+    }
+    
+    .category-menu > li > a:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+    
+    /* Mobile dropdown - full width */
+    .category-dropdown {
+        position: static !important;
+        display: none;
+        width: 100% !important;
+        background: rgba(0, 0, 0, 0.2);
+        margin-top: 0;
+        border-radius: 0;
+        box-shadow: none;
+        padding: 0;
+        min-width: auto !important;
+    }
+    
+    .category-menu > li.dropdown-open > .category-dropdown {
+        display: block !important;
+    }
+    
+    .category-dropdown li {
+        padding: 0;
+        border-bottom: 1px dashed rgba(255, 255, 255, 0.2);
+    }
+    
+    .category-dropdown li:last-child {
+        border-bottom: none;
+    }
+    
+    .category-dropdown a {
+        padding: 12px 20px 12px 40px;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 14px;
+        display: block;
+        text-decoration: none;
+    }
+    
+    .category-dropdown a:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+    
+    /* Duplicate rules removed - using styles defined above */
+    
+    /* Close button for mobile menu - Match reference design */
+    .category-nav-close {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        color: white;
+        width: auto;
+        height: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 18px;
+        font-weight: 600;
+        z-index: 10;
+        padding: 8px 12px;
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .category-nav-close:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+    
+    /* Menu header section - Match reference */
+    .category-nav::before {
+        content: 'WHAT ARE YOU LOOKING FOR?';
+        display: block;
+        padding: 20px 20px 15px 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        font-size: 16px;
+        font-weight: 700;
+        color: white;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 50px;
+    }
+    
+    /* Search bar in menu - Match reference */
+    .category-nav-search {
+        padding: 15px 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        position: relative;
+        background: #d92128;
+    }
+    
+    .category-nav-search input {
+        width: 100%;
+        padding: 12px 40px 12px 15px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 25px;
+        font-size: 14px;
+        outline: none;
+        box-sizing: border-box;
+        background: white;
+        color: #333;
+    }
+    
+    .category-nav-search input:focus {
+        border-color: white;
+        background: white;
+    }
+    
+    .category-nav-search input::placeholder {
+        color: #999;
+    }
+    
+    .category-nav-search button {
+        position: absolute;
+        right: 30px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: transparent;
+        border: none;
+        color: #999;
+        font-size: 16px;
+        cursor: pointer;
+        padding: 0;
+    }
+    
+    /* Search results dropdown in menu */
+    .category-nav-search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        max-height: calc(100vh - 200px);
+        overflow-y: auto;
+        overflow-x: hidden;
+        z-index: 1003;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        border-radius: 0 0 8px 8px;
+        display: none;
+        /* Hide scrollbar */
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    
+    .category-nav-search-results::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
+    }
+    
+    .category-nav-search-results.active {
+        display: block;
+    }
+    
+    .category-nav-search-result-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+        border-bottom: 1px solid #eee;
+        cursor: pointer;
+        transition: background 0.2s;
+        text-decoration: none;
+        color: inherit;
+    }
+    
+    .category-nav-search-result-item:hover {
+        background: #f5f5f5;
+    }
+    
+    .category-nav-search-result-item:last-child {
+        border-bottom: none;
+    }
+    
+    .category-nav-search-result-item img {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        margin-right: 12px;
+        border-radius: 4px;
+        flex-shrink: 0;
+    }
+    
+    .category-nav-search-result-content {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .category-nav-search-result-name {
+        font-weight: 500;
+        margin-bottom: 4px;
+        color: #333;
+        font-size: 14px;
+        line-height: 1.4;
+    }
+    
+    .category-nav-search-result-price {
+        color: #d92128;
+        font-weight: 600;
+        font-size: 14px;
+    }
+    
+    .category-nav-search-result-price .original-price {
+        text-decoration: line-through;
+        color: #999;
+        margin-left: 8px;
+        font-size: 12px;
+        font-weight: 400;
+    }
+}
+
+/* FORCE HIDE MOBILE ELEMENTS ON DESKTOP */
+@media (min-width: 992px) {
+    /* Hide mobile cart icon next to logo */
+    .logo-wrapper #cartIcon {
+        display: none !important;
+    }
+
+    /* Hide mobile menu close button */
+    .category-nav-close {
+        display: none !important;
+    }
+
+    /* Hide mobile menu search */
+    .category-nav-search {
+        display: none !important;
+    }
+
+    /* Hide mobile menu search results */
+    .category-nav-search-results {
+        display: none !important;
+    }
+
+    /* Hide "WHAT ARE YOU LOOKING FOR?" pseudo-element */
+    .category-nav::before {
+        display: none !important;
+        content: none !important;
+    }
+    
+    /* Ensure category toggle is hidden */
+    .category-nav-toggle {
+        display: none !important;
+    }
+
+    /* Center the category menu on desktop */
+    .category-menu {
+        justify-content: center !important;
+        width: 100% !important;
+        min-width: auto !important;
+        flex-wrap: wrap !important;
+        display: flex !important;
+        position: relative !important;
+        z-index: 1002 !important;
+    }
+
+    /* Ensure dropdowns are visible and have correct z-index */
+    .category-nav {
+        overflow: visible !important;
+        overflow-x: visible !important;
+        overflow-y: visible !important;
+        z-index: 1001 !important;
+    }
+
+    .category-dropdown {
+        z-index: 1005 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+}
